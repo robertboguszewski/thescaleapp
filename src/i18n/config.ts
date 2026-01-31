@@ -149,7 +149,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'pl', // Polish as default (preserve existing user experience)
+    fallbackLng: 'en', // English as default
     supportedLngs: ['pl', 'en'],
     defaultNS: 'common',
     ns: NAMESPACES,

@@ -111,6 +111,8 @@
     "title": "Quick measurement",
     "stabilized": "Measurement stabilized",
     "stabilizing": "Stabilizing...",
+    "measuring": "Measuring in progress...",
+    "standStill": "Stand still on the scale",
     "saved": "Saved",
     "disconnected": "Scale disconnected",
     "connect": "Connect to scale",

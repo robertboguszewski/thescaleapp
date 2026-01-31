@@ -111,6 +111,8 @@
     "title": "Szybki pomiar",
     "stabilized": "Pomiar ustabilizowany",
     "stabilizing": "Stabilizacja...",
+    "measuring": "Trwa pomiar...",
+    "standStill": "Stój nieruchomo na wadze",
     "saved": "Zapisano",
     "disconnected": "Waga rozłączona",
     "connect": "Połącz z wagą",
