@@ -205,8 +205,32 @@ const CONFIG = {
 };
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-// App reads from ./data in development mode (see src/main/services.ts)
-const DATA_DIR = path.join(PROJECT_ROOT, 'data');
+
+// Determine data directory based on target mode
+// Development: ./data (project root)
+// Production: ~/Library/Application Support/thescale-app/data (macOS)
+function getDataDir(forProduction: boolean): string {
+  if (forProduction) {
+    // Production path - matches Electron's app.getPath('userData')
+    const platform = process.platform;
+    const appName = 'thescale-app';
+
+    if (platform === 'darwin') {
+      return path.join(process.env.HOME || '', 'Library', 'Application Support', appName, 'data');
+    } else if (platform === 'win32') {
+      return path.join(process.env.APPDATA || '', appName, 'data');
+    } else {
+      // Linux
+      return path.join(process.env.HOME || '', '.config', appName, 'data');
+    }
+  }
+  // Development path
+  return path.join(PROJECT_ROOT, 'data');
+}
+
+// Check if --production flag is passed
+const isProduction = process.argv.includes('--production') || process.argv.includes('-p');
+const DATA_DIR = getDataDir(isProduction);
 const PROFILES_DIR = path.join(DATA_DIR, 'profiles');
 const MEASUREMENTS_DIR = path.join(DATA_DIR, 'measurements');
 
@@ -343,6 +367,10 @@ function removeTestData(): void {
   console.log('║     Xiaomi Scale Test Data Remover                    ║');
   console.log('╚══════════════════════════════════════════════════════╝\n');
 
+  console.log('  Target Mode:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+  console.log('  Data Directory:', DATA_DIR);
+  console.log('');
+
   let removedCount = 0;
 
   // Remove profiles
@@ -399,6 +427,9 @@ function generateTestData(): void {
   console.log('║     Xiaomi Scale Test Data Generator                  ║');
   console.log('╚══════════════════════════════════════════════════════╝\n');
 
+  console.log('  Target Mode:', isProduction ? 'PRODUCTION' : 'DEVELOPMENT');
+  console.log('  Data Directory:', DATA_DIR);
+  console.log('');
   console.log('  Configuration:');
   console.log(`    Date range: ${CONFIG.startDate} to ${CONFIG.endDate}`);
   console.log(`    Height: ${CONFIG.heightCm}cm`);
@@ -470,11 +501,18 @@ function main(): void {
       break;
     case '--help':
     case '-h':
-      console.log('\nUsage: npx ts-node scripts/test-data/generator.ts [command]');
+      console.log('\nUsage: npx ts-node scripts/test-data/generator.ts [command] [options]');
       console.log('\nCommands:');
       console.log('  --generate, -g    Generate test data (default)');
       console.log('  --remove, -r      Remove test data');
-      console.log('  --help, -h        Show this help message\n');
+      console.log('  --help, -h        Show this help message');
+      console.log('\nOptions:');
+      console.log('  --production, -p  Write to production data directory');
+      console.log('                    (~/Library/Application Support/thescale-app/data on macOS)');
+      console.log('\nExamples:');
+      console.log('  npx ts-node scripts/test-data/generator.ts --generate');
+      console.log('  npx ts-node scripts/test-data/generator.ts --generate --production');
+      console.log('  npx ts-node scripts/test-data/generator.ts --remove --production\n');
       break;
     default:
       console.error(`Unknown command: ${command}`);
