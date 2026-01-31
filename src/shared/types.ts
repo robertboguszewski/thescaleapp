@@ -29,10 +29,14 @@ export interface UserProfile {
 
 /**
  * Raw measurement data from the scale
+ * S400 dual-frequency BIA provides two impedance values:
+ * - impedanceOhm: high-frequency impedance (with weight)
+ * - impedanceLowOhm: low-frequency impedance (body composition phase)
  */
 export interface RawMeasurement {
   weightKg: number;
   impedanceOhm?: number;
+  impedanceLowOhm?: number;
   heartRateBpm?: number;
 }
 
@@ -138,6 +142,13 @@ export interface NativeBLEDevice {
 }
 
 /**
+ * BLE scanning mode
+ * - mibeacon: Passive scanning of MiBeacon advertisements (final measurements only)
+ * - gatt: Active GATT connection for real-time weight updates
+ */
+export type BLEScanMode = 'mibeacon' | 'gatt';
+
+/**
  * Native BLE status response
  */
 export interface NativeBLEStatus {
@@ -145,15 +156,23 @@ export interface NativeBLEStatus {
   isScanning: boolean;
   device: NativeBLEDevice | null;
   state: 'idle' | 'scanning' | 'connecting' | 'connected' | 'disconnected' | 'error';
+  scanMode: BLEScanMode;
 }
 
 /**
  * Native BLE measurement event
+ * S400 dual-frequency BIA provides two impedance values
  */
 export interface NativeBLEMeasurement {
   weightKg: number;
   impedanceOhm?: number;
+  impedanceLowOhm?: number;
+  heartRateBpm?: number;
+  profileId?: number;
   timestamp: string;
+  isStabilized?: boolean;
+  isImpedanceMeasurement?: boolean;
+  isHeartRateMeasurement?: boolean;
 }
 
 /**
@@ -472,6 +491,8 @@ export const IpcChannels = {
   NATIVE_BLE_DISCONNECT: 'nativeBle:disconnect',
   NATIVE_BLE_SET_DEVICE: 'nativeBle:setDevice',
   NATIVE_BLE_GET_STATUS: 'nativeBle:getStatus',
+  NATIVE_BLE_SET_SCAN_MODE: 'nativeBle:setScanMode',
+  NATIVE_BLE_GET_SCAN_MODE: 'nativeBle:getScanMode',
 
   // Native BLE Event channels (main -> renderer)
   NATIVE_BLE_MEASUREMENT: 'nativeBle:measurement',
@@ -506,6 +527,9 @@ export const IpcChannels = {
   CONFIG_EXPORT: 'config:export',
   CONFIG_IMPORT: 'config:import',
   CONFIG_RESET: 'config:reset',
+
+  // Shell channels
+  SHELL_OPEN_EXTERNAL: 'shell:openExternal',
 } as const;
 
 /**
@@ -552,13 +576,16 @@ export interface ElectronAPI {
   onBLEError: (callback: (event: BLEErrorEvent) => void) => () => void;
   onBLEDeviceDiscovered: (callback: (device: BLEDeviceInfo) => void) => () => void;
 
-  // Native BLE (using @abandonware/noble)
+  // Native BLE (using bleak Python adapter)
   nativeBLE: {
     startScanning: () => Promise<IpcResponse<void>>;
     stopScanning: () => Promise<IpcResponse<void>>;
     disconnect: () => Promise<IpcResponse<void>>;
     setDevice: (mac: string) => Promise<IpcResponse<void>>;
     getStatus: () => Promise<IpcResponse<NativeBLEStatus>>;
+    /** Set scan mode: 'mibeacon' for passive ads, 'gatt' for real-time connection */
+    setScanMode: (mode: BLEScanMode) => Promise<IpcResponse<void>>;
+    getScanMode: () => Promise<IpcResponse<BLEScanMode>>;
     // Event subscriptions (return unsubscribe function)
     onMeasurement: (callback: (measurement: NativeBLEMeasurement) => void) => () => void;
     onConnected: (callback: (device: NativeBLEDevice) => void) => () => void;
@@ -593,6 +620,9 @@ export interface ElectronAPI {
   exportConfig: () => Promise<IpcResponse<ConfigExport>>;
   importConfig: (config: ConfigExport) => Promise<IpcResponse<void>>;
   resetConfig: () => Promise<IpcResponse<void>>;
+
+  // Shell
+  openExternalUrl: (url: string) => Promise<IpcResponse<void>>;
 }
 
 /**

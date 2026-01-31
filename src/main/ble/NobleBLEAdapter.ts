@@ -62,6 +62,7 @@ function getNoble(): INoble | null {
  */
 const DEFAULT_CONFIG: BLEAdapterConfig = {
   deviceMac: null,
+  bleKey: null,
   autoConnect: true,
   scanInterval: 5000,
   scanTimeout: 30000,

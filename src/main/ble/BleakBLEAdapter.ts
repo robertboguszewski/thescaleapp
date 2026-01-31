@@ -23,6 +23,7 @@ import {
   type BLEAdapterEvents,
   type IBLEAdapter,
   type RawMeasurement,
+  type BLEScanMode,
 } from './BLETypes';
 
 /**
@@ -30,10 +31,12 @@ import {
  */
 const DEFAULT_CONFIG: BLEAdapterConfig = {
   deviceMac: null,
+  bleKey: null,  // 32 hex char bindkey for MiBeacon decryption
   autoConnect: true,
   scanInterval: 5000,
   scanTimeout: 60000, // Longer timeout for advertisement-based scanning
   allowDuplicates: true,
+  scanMode: 'mibeacon', // Default to MiBeacon passive scanning
 };
 
 /**
@@ -54,7 +57,12 @@ interface ScannerMessage {
   measurement?: {
     weightKg: number;
     impedanceOhm?: number;
+    impedanceLowOhm?: number;
+    heartRateBpm?: number;
+    profileId?: number;
     isStabilized?: boolean;
+    isImpedanceMeasurement?: boolean;
+    isHeartRateMeasurement?: boolean;
     weightRemoved?: boolean;
     timestamp?: string;
   };
@@ -86,24 +94,30 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
   }
 
   /**
-   * Get the path to the Python scanner script
+   * Get the path to the Python scanner script based on scan mode
    */
   private getScannerPath(): string {
     // In development, use the scripts directory
     // In production, it should be bundled with the app
     const isDev = !app.isPackaged;
+
+    // Select script based on scan mode
+    const scriptName = this.config.scanMode === 'gatt'
+      ? 'ble_gatt_scanner.py'
+      : 'ble-scanner.py';
+
     let scannerPath: string;
 
     if (isDev) {
       // In development, app.getAppPath() returns the project root
-      scannerPath = path.join(app.getAppPath(), 'scripts', 'ble-scanner.py');
+      scannerPath = path.join(app.getAppPath(), 'scripts', scriptName);
     } else {
       // In production, look in Resources
-      scannerPath = path.join(process.resourcesPath, 'scripts', 'ble-scanner.py');
+      scannerPath = path.join(process.resourcesPath, 'scripts', scriptName);
     }
 
     console.log('[BleakBLEAdapter] Scanner path:', scannerPath);
-    console.log('[BleakBLEAdapter] App path:', app.getAppPath());
+    console.log('[BleakBLEAdapter] Scan mode:', this.config.scanMode);
     console.log('[BleakBLEAdapter] Is packaged:', app.isPackaged);
 
     return scannerPath;
@@ -128,15 +142,31 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
       return;
     }
 
-    const args = [
-      scannerPath,
-      '--scan-duration',
-      String(this.config.scanTimeout / 1000),
-      '--continuous', // Keep scanning for advertisement-based measurements
-    ];
+    const args = [scannerPath];
 
-    if (this.config.deviceMac) {
+    // Build arguments based on scan mode
+    if (this.config.scanMode === 'gatt') {
+      // GATT mode requires device MAC for direct connection
+      if (!this.config.deviceMac) {
+        const error = new Error('GATT mode requires a device MAC address');
+        console.error('[BleakBLEAdapter]', error.message);
+        this.emit('error', error);
+        return;
+      }
       args.push('--device-mac', this.config.deviceMac);
+      args.push('--scan-duration', String(this.config.scanTimeout / 1000));
+    } else {
+      // MiBeacon mode - passive scanning
+      args.push('--scan-duration', String(this.config.scanTimeout / 1000));
+      args.push('--continuous'); // Keep scanning for advertisement-based measurements
+
+      if (this.config.deviceMac) {
+        args.push('--device-mac', this.config.deviceMac);
+      }
+
+      if (this.config.bleKey) {
+        args.push('--bindkey', this.config.bleKey);
+      }
     }
 
     console.log('[BleakBLEAdapter] Starting Python scanner:', 'python3', args.join(' '));
@@ -260,11 +290,17 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
           const rawMeasurement: RawMeasurement = {
             weightKg: message.measurement.weightKg,
             impedanceOhm: message.measurement.impedanceOhm,
+            impedanceLowOhm: message.measurement.impedanceLowOhm,
+            heartRateBpm: message.measurement.heartRateBpm,
+            profileId: message.measurement.profileId,
             timestamp: message.measurement.timestamp ? new Date(message.measurement.timestamp) : new Date(),
             isStabilized: message.measurement.isStabilized,
+            isImpedanceMeasurement: message.measurement.isImpedanceMeasurement,
+            isHeartRateMeasurement: message.measurement.isHeartRateMeasurement,
           };
 
           // Always emit measurement for real-time feedback
+          console.log('[BleakBLEAdapter] Emitting measurement, listeners:', this.listenerCount('measurement'));
           this.emit('measurement', rawMeasurement);
         }
         break;
@@ -356,6 +392,30 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
    */
   setDeviceMac(mac: string | null): void {
     this.config.deviceMac = mac;
+  }
+
+  /**
+   * Set the BLE bindkey for MiBeacon decryption
+   */
+  setBleKey(key: string | null): void {
+    this.config.bleKey = key;
+  }
+
+  /**
+   * Set the scan mode
+   * - 'mibeacon': Passive scanning of MiBeacon advertisements (final measurements only)
+   * - 'gatt': Active GATT connection for real-time weight updates
+   */
+  setScanMode(mode: BLEScanMode): void {
+    console.log('[BleakBLEAdapter] Setting scan mode:', mode);
+    this.config.scanMode = mode;
+  }
+
+  /**
+   * Get current scan mode
+   */
+  getScanMode(): BLEScanMode {
+    return this.config.scanMode;
   }
 
   /**

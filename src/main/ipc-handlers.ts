@@ -7,7 +7,7 @@
  * @module main/ipc-handlers
  */
 
-import { ipcMain, BrowserWindow } from 'electron';
+import { ipcMain, BrowserWindow, shell } from 'electron';
 import {
   getMeasurementService,
   getProfileService,
@@ -425,6 +425,24 @@ export function registerIpcHandlers(): void {
     wrapHandler(async (_event, config: StoredBLEConfig): Promise<void> => {
       const configStore = getAppConfigStoreInstance();
       configStore.setBLEConfig(config);
+
+      // Sync to existing BLE adapter if it exists
+      if (bleAdapter) {
+        console.log('[IPC] Syncing BLE config to adapter:', {
+          deviceMac: config.deviceMac,
+          hasBleKey: !!config.bleKey,
+        });
+
+        // Stop current scan if running so next scan uses new config
+        // This is important because the Python process uses config at start time
+        if (bleAdapter.getState() === 'scanning') {
+          console.log('[IPC] Stopping current scan to apply new config');
+          await bleAdapter.stopScanning();
+        }
+
+        bleAdapter.setDeviceMac(config.deviceMac || null);
+        bleAdapter.setBleKey(config.bleKey || null);
+      }
     })
   );
 
@@ -468,6 +486,19 @@ export function registerIpcHandlers(): void {
     })
   );
 
+  // ====== Shell Handlers ======
+
+  ipcMain.handle(
+    IpcChannels.SHELL_OPEN_EXTERNAL,
+    wrapHandler(async (_event, url: string): Promise<void> => {
+      // Validate URL to prevent security issues
+      if (!url.startsWith('https://') && !url.startsWith('http://')) {
+        throw new Error('Invalid URL: must start with http:// or https://');
+      }
+      await shell.openExternal(url);
+    })
+  );
+
   console.log('[IPC] Handlers registered successfully');
 }
 
@@ -486,13 +517,16 @@ function getBLEAdapter(): BleakBLEAdapter {
 
     bleAdapter = new BleakBLEAdapter({
       deviceMac: bleConfig.deviceMac || null,
+      bleKey: bleConfig.bleKey || null,  // MiBeacon decryption key
       autoConnect: bleConfig.autoConnect ?? true,
       scanInterval: 5000,
-      scanTimeout: 30000,
+      scanTimeout: 60000,  // Longer timeout for advertisement scanning
       allowDuplicates: true,
     });
 
     console.log('[NativeBLE] BleakBLEAdapter initialized (using Python bleak)');
+    console.log('[NativeBLE] Device MAC:', bleConfig.deviceMac);
+    console.log('[NativeBLE] Has BLE Key:', !!bleConfig.bleKey);
   }
   return bleAdapter;
 }
@@ -508,6 +542,17 @@ export function registerNativeBLEHandlers(): void {
     IpcChannels.NATIVE_BLE_START_SCANNING,
     wrapHandler(async (): Promise<void> => {
       const adapter = getBLEAdapter();
+
+      // Reload config from store before scanning to ensure latest values
+      const configStore = getAppConfigStoreInstance();
+      const bleConfig = configStore.getBLEConfig();
+      console.log('[NativeBLE] Reloading config before scan:', {
+        deviceMac: bleConfig.deviceMac,
+        hasBleKey: !!bleConfig.bleKey,
+      });
+      adapter.setDeviceMac(bleConfig.deviceMac || null);
+      adapter.setBleKey(bleConfig.bleKey || null);
+
       await adapter.startScanning();
     })
   );
@@ -551,6 +596,7 @@ export function registerNativeBLEHandlers(): void {
       isScanning: boolean;
       device: { id: string; name: string } | null;
       state: string;
+      scanMode: string;
     }> => {
       const adapter = getBLEAdapter();
       return {
@@ -558,7 +604,39 @@ export function registerNativeBLEHandlers(): void {
         isScanning: adapter.getState() === 'scanning',
         device: adapter.getConnectedDevice(),
         state: adapter.getState(),
+        scanMode: adapter.getScanMode(),
       };
+    })
+  );
+
+  ipcMain.handle(
+    IpcChannels.NATIVE_BLE_SET_SCAN_MODE,
+    wrapHandler(async (_event, mode: 'mibeacon' | 'gatt'): Promise<void> => {
+      console.log('[NativeBLE] Setting scan mode:', mode);
+      const adapter = getBLEAdapter();
+
+      // Stop scanning if currently scanning
+      if (adapter.getState() === 'scanning') {
+        await adapter.stopScanning();
+      }
+
+      adapter.setScanMode(mode);
+
+      // Save to config
+      const configStore = getAppConfigStoreInstance();
+      const currentConfig = configStore.getBLEConfig();
+      configStore.setBLEConfig({
+        ...currentConfig,
+        scanMode: mode,
+      });
+    })
+  );
+
+  ipcMain.handle(
+    IpcChannels.NATIVE_BLE_GET_SCAN_MODE,
+    wrapHandler(async (): Promise<string> => {
+      const adapter = getBLEAdapter();
+      return adapter.getScanMode();
     })
   );
 
@@ -571,9 +649,22 @@ export function registerNativeBLEHandlers(): void {
  */
 export function setupNativeBLEEventForwarding(mainWindow: BrowserWindow): () => void {
   const adapter = getBLEAdapter();
+  console.log('[NativeBLE] Setting up event forwarding, adapter state:', adapter.getState());
+  console.log('[NativeBLE] Adapter listener count before:', adapter.listenerCount('measurement'));
 
-  // Forward measurement events
-  const measurementHandler = (measurement: { weightKg: number; impedanceOhm?: number; timestamp?: Date }) => {
+  // Forward measurement events (all fields from BLE scanner)
+  const measurementHandler = (measurement: {
+    weightKg: number;
+    impedanceOhm?: number;
+    impedanceLowOhm?: number;
+    heartRateBpm?: number;
+    profileId?: number;
+    timestamp?: Date;
+    isStabilized?: boolean;
+    isImpedanceMeasurement?: boolean;
+    isHeartRateMeasurement?: boolean;
+  }) => {
+    console.log('[NativeBLE] Forwarding measurement to renderer:', measurement.weightKg, 'kg, HR:', measurement.heartRateBpm);
     if (!mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IpcChannels.NATIVE_BLE_MEASUREMENT, {
         ...measurement,
@@ -582,6 +673,7 @@ export function setupNativeBLEEventForwarding(mainWindow: BrowserWindow): () => 
     }
   };
   adapter.on('measurement', measurementHandler);
+  console.log('[NativeBLE] Adapter listener count after:', adapter.listenerCount('measurement'));
 
   // Forward connected events
   const connectedHandler = (device: { id: string; name: string }) => {
@@ -609,6 +701,7 @@ export function setupNativeBLEEventForwarding(mainWindow: BrowserWindow): () => 
 
   // Forward discovered events
   const discoveredHandler = (device: { id: string; name: string }) => {
+    console.log('[NativeBLE] Forwarding discovered event to renderer:', device);
     if (!mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IpcChannels.NATIVE_BLE_DISCOVERED, device);
     }

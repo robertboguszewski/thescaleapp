@@ -328,10 +328,26 @@ const electronAPI: ElectronAPI = {
     },
 
     /**
+     * Set scan mode: 'mibeacon' for passive ads, 'gatt' for real-time connection
+     */
+    setScanMode: (mode: 'mibeacon' | 'gatt'): Promise<IpcResponse<void>> => {
+      return ipcRenderer.invoke(IpcChannels.NATIVE_BLE_SET_SCAN_MODE, mode);
+    },
+
+    /**
+     * Get current scan mode
+     */
+    getScanMode: (): Promise<IpcResponse<'mibeacon' | 'gatt'>> => {
+      return ipcRenderer.invoke(IpcChannels.NATIVE_BLE_GET_SCAN_MODE);
+    },
+
+    /**
      * Subscribe to measurement events
      */
     onMeasurement: (callback: (measurement: NativeBLEMeasurement) => void): (() => void) => {
+      console.log('[Preload] onMeasurement subscription registered');
       const listener = (_event: Electron.IpcRendererEvent, data: NativeBLEMeasurement) => {
+        console.log('[Preload] Received measurement IPC:', data.weightKg, 'kg');
         callback(data);
       };
       ipcRenderer.on(IpcChannels.NATIVE_BLE_MEASUREMENT, listener);
@@ -376,6 +392,7 @@ const electronAPI: ElectronAPI = {
      */
     onDiscovered: (callback: (device: NativeBLEDevice) => void): (() => void) => {
       const listener = (_event: Electron.IpcRendererEvent, data: NativeBLEDevice) => {
+        console.log('[Preload] Received discovered event:', data);
         callback(data);
       };
       ipcRenderer.on(IpcChannels.NATIVE_BLE_DISCOVERED, listener);
@@ -560,6 +577,16 @@ const electronAPI: ElectronAPI = {
    */
   resetConfig: (): Promise<IpcResponse<void>> => {
     return ipcRenderer.invoke(IpcChannels.CONFIG_RESET);
+  },
+
+  // ====== Shell ======
+
+  /**
+   * Open a URL in the default external browser
+   * @param url - The URL to open (must be http:// or https://)
+   */
+  openExternalUrl: (url: string): Promise<IpcResponse<void>> => {
+    return ipcRenderer.invoke(IpcChannels.SHELL_OPEN_EXTERNAL, url);
   },
 };
 

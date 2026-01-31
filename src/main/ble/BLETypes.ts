@@ -6,12 +6,21 @@
 
 /**
  * Raw measurement data from the scale
+ * S400 dual-frequency BIA provides:
+ * - impedanceOhm: high-frequency impedance (with weight measurement)
+ * - impedanceLowOhm: low-frequency impedance (body composition phase)
+ * - heartRateBpm: heart rate from scale sensor
  */
 export interface RawMeasurement {
   weightKg: number;
   impedanceOhm?: number;
+  impedanceLowOhm?: number;
+  heartRateBpm?: number;
+  profileId?: number;
   timestamp?: Date;
   isStabilized?: boolean;
+  isImpedanceMeasurement?: boolean;
+  isHeartRateMeasurement?: boolean;
 }
 
 /**
@@ -24,14 +33,24 @@ export interface BLEDevice {
 }
 
 /**
+ * BLE scanning mode
+ * - mibeacon: Passive scanning of MiBeacon advertisements (final measurements only)
+ * - gatt: Active GATT connection for real-time weight updates
+ */
+export type BLEScanMode = 'mibeacon' | 'gatt';
+
+/**
  * BLE Adapter configuration
  */
 export interface BLEAdapterConfig {
   deviceMac: string | null;
+  bleKey: string | null;  // 32 hex char bindkey for MiBeacon decryption
   autoConnect: boolean;
   scanInterval: number;
   scanTimeout: number;
   allowDuplicates: boolean;
+  /** Scanning mode: 'mibeacon' for passive ads, 'gatt' for real-time connection */
+  scanMode: BLEScanMode;
 }
 
 /**
