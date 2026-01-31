@@ -70,3 +70,8 @@ credentials.json
 
 # User data (measurements, profiles)
 data/
+
+# AI assistant files (Claude, Serena)
+.claude/
+.serena/
+CLAUDE.md

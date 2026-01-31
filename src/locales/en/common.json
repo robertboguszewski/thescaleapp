@@ -80,8 +80,8 @@
     "12": "December"
   },
   "theme": {
-    "light": "Light mode",
-    "dark": "Dark mode",
+    "light": "Light",
+    "dark": "Dark",
     "auto": "Auto"
   },
   "profile": {
