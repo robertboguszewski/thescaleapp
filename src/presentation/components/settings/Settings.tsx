@@ -62,7 +62,8 @@ const ProfileListItem: React.FC<{
   onSelect: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}> = ({ profile, isSelected, onSelect, onEdit, onDelete }) => {
+  t: (key: string, options?: Record<string, unknown>) => string;
+}> = ({ profile, isSelected, onSelect, onEdit, onDelete, t }) => {
   const age = calculateAgeFromBirthYear(profile.birthYear, profile.birthMonth);
 
   return (
@@ -92,12 +93,12 @@ const ProfileListItem: React.FC<{
             <p className="font-medium text-gray-900 dark:text-white">{profile.name}</p>
             {profile.isDefault && (
               <span className="px-2 py-0.5 text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded">
-                Domyslny
+                {t('profiles.defaultBadge')}
               </span>
             )}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {age} lat, {profile.gender === 'male' ? 'M' : 'K'}
+            {t('profiles.ageYears', { age })}, {profile.gender === 'male' ? t('common:gender.maleShort') : t('common:gender.femaleShort')}
           </p>
         </div>
       </div>
@@ -130,7 +131,7 @@ const ProfileListItem: React.FC<{
  * Profiles section
  */
 const ProfilesSection: React.FC = () => {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation(['settings', 'common']);
   const { profiles, setEditingProfileId, setIsEditing, removeProfile, setCurrentProfileId, isEditing } = useProfileStore();
   const currentProfile = useCurrentProfile();
   const { addNotification } = useAppStore();
@@ -190,15 +191,16 @@ const ProfilesSection: React.FC = () => {
             onSelect={() => setCurrentProfileId(profile.id)}
             onEdit={() => handleEditProfile(profile.id)}
             onDelete={() => handleDeleteProfile(profile.id)}
+            t={t}
           />
         ))}
       </div>
 
       {profiles.length === 0 && (
         <Card className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">Brak profili. Utworz pierwszy profil.</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('profiles.noProfiles')}</p>
           <Button variant="primary" className="mt-4" onClick={handleNewProfile}>
-            Utworz profil
+            {t('common:buttons.createProfile')}
           </Button>
         </Card>
       )}
@@ -210,14 +212,15 @@ const ProfilesSection: React.FC = () => {
  * Appearance section
  */
 const AppearanceSection: React.FC = () => {
+  const { t } = useTranslation(['settings', 'common']);
   const { isDarkMode, setDarkMode, isSidebarCollapsed, setSidebarCollapsed } = useAppStore();
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Wyglad</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('appearance.title')}</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Dostosuj wyglad aplikacji
+          {t('appearance.description')}
         </p>
       </div>
 
@@ -225,7 +228,7 @@ const AppearanceSection: React.FC = () => {
         <div className="space-y-6">
           {/* Theme selection */}
           <div>
-            <p className="font-medium text-gray-900 dark:text-white mb-3">Motyw</p>
+            <p className="font-medium text-gray-900 dark:text-white mb-3">{t('appearance.theme')}</p>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setDarkMode(false)}
@@ -236,7 +239,7 @@ const AppearanceSection: React.FC = () => {
                 }`}
               >
                 <div className="w-full h-16 bg-white border border-gray-200 rounded mb-2" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Jasny</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('common:theme.light')}</p>
               </button>
               <button
                 onClick={() => setDarkMode(true)}
@@ -247,14 +250,14 @@ const AppearanceSection: React.FC = () => {
                 }`}
               >
                 <div className="w-full h-16 bg-gray-800 border border-gray-700 rounded mb-2" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Ciemny</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('common:theme.dark')}</p>
               </button>
               <button
                 disabled
                 className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed"
               >
                 <div className="w-full h-16 bg-gradient-to-b from-white to-gray-800 border border-gray-200 rounded mb-2" />
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Auto</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('common:theme.auto')}</p>
               </button>
             </div>
           </div>
@@ -262,8 +265,8 @@ const AppearanceSection: React.FC = () => {
           {/* Sidebar toggle */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
             <div>
-              <p className="font-medium text-gray-900 dark:text-white">Zwiniety pasek boczny</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Pokaz tylko ikony w nawigacji</p>
+              <p className="font-medium text-gray-900 dark:text-white">{t('appearance.collapsedSidebar')}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('appearance.collapsedSidebarDesc')}</p>
             </div>
             <button
               onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
@@ -291,6 +294,7 @@ const AppearanceSection: React.FC = () => {
  * About section
  */
 const AboutSection: React.FC = () => {
+  const { t } = useTranslation(['settings', 'common']);
   const { addNotification } = useAppStore();
   const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
@@ -319,9 +323,9 @@ const AboutSection: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">O aplikacji</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('about.title')}</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Informacje o TheScale
+          {t('about.description')}
         </p>
       </div>
 
@@ -334,7 +338,7 @@ const AboutSection: React.FC = () => {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">TheScale</h2>
-          <p className="text-gray-500 dark:text-gray-400">Wersja 1.0.0</p>
+          <p className="text-gray-500 dark:text-gray-400">{t('about.version', { version: '1.0.0' })}</p>
         </div>
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4 space-y-3 text-sm">
@@ -354,7 +358,7 @@ const AboutSection: React.FC = () => {
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-            Aplikacja do odczytu danych z wagi Xiaomi Mi Body Composition Scale S400.
+            {t('about.appDescription')}
           </p>
         </div>
       </Card>
@@ -363,9 +367,9 @@ const AboutSection: React.FC = () => {
       <Card>
         <div className="space-y-4">
           <div>
-            <h4 className="font-medium text-gray-900 dark:text-white">Resetuj konfigurację</h4>
+            <h4 className="font-medium text-gray-900 dark:text-white">{t('about.resetConfig')}</h4>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Usuń wszystkie profile, ustawienia urządzenia i pomiary. Ta akcja jest nieodwracalna.
+              {t('about.resetConfigDesc')}
             </p>
           </div>
 
@@ -376,7 +380,7 @@ const AboutSection: React.FC = () => {
               className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
               data-testid="reset-setup-button"
             >
-              Resetuj konfigurację
+              {t('about.resetConfig')}
             </Button>
           ) : (
             <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
@@ -386,10 +390,10 @@ const AboutSection: React.FC = () => {
               </svg>
               <div className="flex-1">
                 <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                  Na pewno chcesz zresetować?
+                  {t('about.confirmReset')}
                 </p>
                 <p className="text-xs text-red-600 dark:text-red-400">
-                  Wszystkie dane zostaną usunięte.
+                  {t('about.confirmResetDesc')}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -398,7 +402,7 @@ const AboutSection: React.FC = () => {
                   size="sm"
                   onClick={() => setShowResetConfirm(false)}
                 >
-                  Anuluj
+                  {t('common:buttons.cancel')}
                 </Button>
                 <Button
                   variant="primary"
@@ -407,7 +411,7 @@ const AboutSection: React.FC = () => {
                   className="bg-red-600 hover:bg-red-700"
                   data-testid="confirm-reset-button"
                 >
-                  Resetuj
+                  {t('common:buttons.reset')}
                 </Button>
               </div>
             </div>

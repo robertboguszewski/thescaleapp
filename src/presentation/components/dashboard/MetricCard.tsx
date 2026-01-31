@@ -64,51 +64,32 @@ const getStatusColors = (status: MetricStatus) => {
 };
 
 /**
- * Trend indicator component
+ * Trend indicator component - compact version
  */
 const TrendIndicator: React.FC<{
   direction: TrendDirection;
   value?: string;
 }> = ({ direction, value }) => {
-  const trendConfig = {
+  const config = {
     up: {
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 19V5M5 12l7-7 7 7" />
-        </svg>
-      ),
-      color: 'text-green-500 dark:text-green-400',
-      bgColor: 'bg-green-100 dark:bg-green-900/30',
+      icon: '↑',
+      color: 'text-green-500',
     },
     down: {
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 5v14M5 12l7 7 7-7" />
-        </svg>
-      ),
-      color: 'text-red-500 dark:text-red-400',
-      bgColor: 'bg-red-100 dark:bg-red-900/30',
+      icon: '↓',
+      color: 'text-red-500',
     },
     stable: {
-      icon: (
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M5 12h14" />
-        </svg>
-      ),
-      color: 'text-gray-500 dark:text-gray-400',
-      bgColor: 'bg-gray-100 dark:bg-gray-800',
+      icon: '→',
+      color: 'text-gray-400',
     },
-  };
-
-  const config = trendConfig[direction];
+  }[direction];
 
   return (
-    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full whitespace-nowrap ${config.bgColor}`}>
-      <span className={config.color}>{config.icon}</span>
-      {value && value !== '0' && (
-        <span className={`text-xs font-medium ${config.color}`}>{value}</span>
-      )}
-    </div>
+    <span className={`text-sm font-medium ${config.color}`}>
+      {config.icon}
+      {value && value !== '0' && <span className="ml-0.5">{value}</span>}
+    </span>
   );
 };
 
@@ -117,50 +98,50 @@ const TrendIndicator: React.FC<{
  */
 export const MetricIcons = {
   weight: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
     </svg>
   ),
   bmi: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 9h18M9 21V9" />
     </svg>
   ),
   bodyFat: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ),
   muscle: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M6.5 6.5L17.5 17.5" />
       <path d="M4.5 12.5l5-5 2 2" />
       <path d="M12.5 19.5l5-5-2-2" />
     </svg>
   ),
   water: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
     </svg>
   ),
   visceral: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 8v4M12 16h.01" />
     </svg>
   ),
   bmr: (
-    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
     </svg>
   ),
 };
 
 /**
- * MetricCard component
+ * MetricCard component - compact inline layout
  */
 export const MetricCard: React.FC<MetricCardProps> = ({
   label,
@@ -176,44 +157,35 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const statusColors = getStatusColors(status);
 
   return (
-    <Card
-      variant="default"
-      padding="md"
-      interactive={!!onClick}
+    <div
+      className={`rounded-lg p-2.5 ${statusColors.bg} ${statusColors.border} border-l-2 ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
       onClick={onClick}
-      className={`${statusColors.border} border-l-4`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          {icon && (
-            <div className={`p-2 rounded-lg ${statusColors.bg}`}>
-              <span className={statusColors.text}>{icon}</span>
-            </div>
+      {/* Label row */}
+      <div className="flex items-center gap-1.5 mb-1">
+        {icon && (
+          <span className={`${statusColors.text} [&>svg]:w-4 [&>svg]:h-4`}>{icon}</span>
+        )}
+        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">
+          {label}
+        </span>
+      </div>
+
+      {/* Value + Trend */}
+      <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline gap-0.5">
+          <span className="text-lg font-bold text-gray-900 dark:text-white">
+            {value}
+          </span>
+          {unit && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {unit}
+            </span>
           )}
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {label}
-            </p>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                {value}
-              </span>
-              {unit && (
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {unit}
-                </span>
-              )}
-            </div>
-          </div>
         </div>
         {trend && <TrendIndicator direction={trend} value={trendValue} />}
       </div>
-      {description && (
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          {description}
-        </p>
-      )}
-    </Card>
+    </div>
   );
 };
 

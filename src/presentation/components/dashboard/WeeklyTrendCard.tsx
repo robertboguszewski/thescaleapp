@@ -7,21 +7,34 @@
  * @module presentation/components/dashboard/WeeklyTrendCard
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { useMeasurementStore, type Measurement } from '../../stores/measurementStore';
 import { useAppStore } from '../../stores/appStore';
 
 /**
- * Mini sparkline chart component
+ * Mini sparkline chart component - responsive width
  */
 const MiniSparkline: React.FC<{
   data: number[];
-  width?: number;
   height?: number;
   color?: string;
-}> = ({ data, width = 120, height = 40, color = '#6366f1' }) => {
+}> = ({ data, height = 40, color = '#6366f1' }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(200);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setWidth(containerRef.current.offsetWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
   if (data.length < 2) return null;
 
   const min = Math.min(...data);
@@ -37,30 +50,37 @@ const MiniSparkline: React.FC<{
   const pathD = `M ${points.join(' L ')}`;
 
   return (
-    <svg width={width} height={height} className="overflow-visible">
-      {/* Grid lines */}
-      <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="currentColor" strokeOpacity="0.1" />
+    <div ref={containerRef} className="w-full min-w-0">
+      <svg
+        width={width}
+        height={height}
+        className="block w-full"
+        style={{ minWidth: 0 }}
+      >
+        {/* Grid line */}
+        <line x1="0" y1={height / 2} x2={width} y2={height / 2} stroke="currentColor" strokeOpacity="0.1" />
 
-      {/* Line chart */}
-      <path
-        d={pathD}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* End dot */}
-      {data.length > 0 && (
-        <circle
-          cx={width}
-          cy={height - ((data[data.length - 1] - min) / range) * (height - 8) - 4}
-          r="3"
-          fill={color}
+        {/* Line chart */}
+        <path
+          d={pathD}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-      )}
-    </svg>
+
+        {/* End dot */}
+        {data.length > 0 && (
+          <circle
+            cx={width}
+            cy={height - ((data[data.length - 1] - min) / range) * (height - 8) - 4}
+            r="4"
+            fill={color}
+          />
+        )}
+      </svg>
+    </div>
   );
 };
 
@@ -155,13 +175,13 @@ export const WeeklyTrendCard: React.FC = () => {
   // Empty state
   if (!weeklyData) {
     return (
-      <Card className="h-full">
+      <Card className="h-full" padding="md">
         <button
           onClick={handleClick}
-          className="w-full h-full text-left"
+          className="w-full h-full text-left flex flex-col"
           data-testid="weekly-trend-empty"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
               {t('weeklyTrend.title')}
             </h3>
@@ -175,7 +195,7 @@ export const WeeklyTrendCard: React.FC = () => {
               <path d="M9 18l6-6-6-6" />
             </svg>
           </div>
-          <div className="flex flex-col items-center justify-center py-4">
+          <div className="flex-1 flex flex-col items-center justify-center">
             <div className="w-10 h-10 mb-2 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
               <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 3v18h18" />
@@ -195,52 +215,41 @@ export const WeeklyTrendCard: React.FC = () => {
   }
 
   return (
-    <Card className="h-full">
+    <Card className="h-full" padding="sm">
       <button
         onClick={handleClick}
-        className="w-full h-full text-left"
+        className="w-full h-full text-left block"
         data-testid="weekly-trend-card"
       >
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {t('weeklyTrend.title')}
-          </h3>
-          <svg
-            className="w-4 h-4 text-gray-400"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </div>
-
-        <div className="flex items-end justify-between gap-4">
-          <div>
+        {/* Header row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
             <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {weeklyData.currentWeight.toFixed(1)}
-              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">
-                kg
-              </span>
+              <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">kg</span>
             </p>
-            <div className="mt-1">
-              <TrendIndicator change={weeklyData.change} unit="kg" />
-            </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              {t('weeklyTrend.measurementsThisWeek', { count: weeklyData.count })}
-            </p>
+            <TrendIndicator change={weeklyData.change} unit="kg" />
           </div>
-
-          <div className="flex-shrink-0">
-            <MiniSparkline
-              data={weeklyData.weights}
-              width={100}
-              height={36}
-              color={weeklyData.change <= 0 ? '#22c55e' : '#ef4444'}
-            />
+          <div className="flex items-center gap-1 text-gray-400">
+            <span className="text-xs">{t('weeklyTrend.title')}</span>
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
           </div>
         </div>
+
+        {/* Full-width sparkline */}
+        <div className="w-full mt-2">
+          <MiniSparkline
+            data={weeklyData.weights}
+            height={56}
+            color={weeklyData.change <= 0 ? '#22c55e' : '#ef4444'}
+          />
+        </div>
+
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          {t('weeklyTrend.measurementsThisWeek', { count: weeklyData.count })}
+        </p>
       </button>
     </Card>
   );

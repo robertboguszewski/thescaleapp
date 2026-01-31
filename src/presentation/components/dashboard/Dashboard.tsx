@@ -13,7 +13,7 @@ import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Skeleton } from '../common/LoadingSpinner';
 import { MetricCard, MetricIcons, MetricStatus, TrendDirection } from './MetricCard';
-import { BodyScoreGauge } from './BodyScoreGauge';
+import { BodyScoreGauge, MiniBodyScoreGauge } from './BodyScoreGauge';
 import { SetupStatus } from './SetupStatus';
 import { QuickActionsPanel } from './QuickActionsPanel';
 import { StatusOverviewPanel } from './StatusOverviewPanel';
@@ -86,9 +86,9 @@ const getMetricStatus = (metric: string, value: number, gender?: 'male' | 'femal
 };
 
 /**
- * Key metrics section for dashboard with measurements
+ * Key metrics inline - returns fragments for parent grid
  */
-const KeyMetricsSection: React.FC = () => {
+const KeyMetricsInline: React.FC = () => {
   const { t } = useTranslation('dashboard');
   const latestMeasurement = useLatestMeasurement();
   const { measurements } = useMeasurementStore();
@@ -112,7 +112,7 @@ const KeyMetricsSection: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <>
       <MetricCard
         label={t('metrics.weight')}
         value={raw.weightKg.toFixed(1)}
@@ -145,7 +145,7 @@ const KeyMetricsSection: React.FC = () => {
         icon={MetricIcons.visceral}
         status={getMetricStatus('visceralFatLevel', metrics.visceralFatLevel)}
       />
-    </div>
+    </>
   );
 };
 
@@ -179,68 +179,64 @@ export const Dashboard: React.FC = () => {
 
   // Render the comprehensive dashboard
   return (
-    <div className="space-y-6">
-      {/* Welcome header */}
+    <div className="space-y-4">
+      {/* Welcome header - compact */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
             {t('title')}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString(i18n.language === 'pl' ? 'pl-PL' : 'en-US', {
               weekday: 'long',
-              year: 'numeric',
-              month: 'long',
+              month: 'short',
               day: 'numeric',
             })}
           </p>
         </div>
-        <Button variant="primary" onClick={() => setActiveTab('measure')}>
+        <Button variant="primary" size="sm" onClick={() => setActiveTab('measure')}>
           {t('quickActions.newMeasurement')}
         </Button>
       </div>
 
-      {/* Top row: Quick Measurement + Status + Weekly Trend */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Quick Measurement Widget - prominent position */}
-        <div className="md:col-span-1">
-          <QuickMeasurementWidget />
-        </div>
-
-        {/* Status overview */}
-        <div className="md:col-span-1">
-          <StatusOverviewPanel />
-        </div>
-
-        {/* Weekly trend card */}
-        <div className="md:col-span-2 lg:col-span-1">
-          <WeeklyTrendCard />
-        </div>
+      {/* Top section: Quick Measurement + Weekly Trend (2 columns) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <QuickMeasurementWidget />
+        <WeeklyTrendCard />
       </div>
 
-      {/* Body Score + Key metrics (if has measurements) */}
+      {/* Metrics row: Body Score + Key metrics (if has measurements) */}
       {latestMeasurement && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Body Score Gauge - compact */}
-          <div className="lg:col-span-1">
-            <BodyScoreGauge score={latestMeasurement.calculated.bodyScore} size={140} showLabels={false} />
-          </div>
+        <Card padding="sm">
+          <div className="flex items-center gap-4">
+            {/* Mini Body Score */}
+            <div className="flex-shrink-0 flex flex-col items-center">
+              <MiniBodyScoreGauge score={latestMeasurement.calculated.bodyScore} size={56} />
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t('bodyScore.title')}
+              </span>
+            </div>
 
-          {/* Key Metrics - expanded */}
-          <div className="lg:col-span-3">
-            <KeyMetricsSection />
+            {/* Divider */}
+            <div className="w-px h-12 bg-gray-200 dark:bg-gray-700" />
+
+            {/* Key Metrics - horizontal flow */}
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <KeyMetricsInline />
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Middle row: Quick Actions + Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Status + Quick Actions row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <StatusOverviewPanel />
         <QuickActionsPanel />
-        <SmartRecommendations />
       </div>
 
-      {/* Bottom row: Recent Activity */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* Bottom: Recommendations + Activity (collapsible) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SmartRecommendations />
         <RecentActivityFeed />
       </div>
     </div>
