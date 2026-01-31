@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { ErrorMessage } from '../common/ErrorMessage';
@@ -20,7 +21,7 @@ import { useMeasurementStore } from '../../stores/measurementStore';
 import { useProfileStore, useCurrentProfile } from '../../stores/profileStore';
 import { useAppStore } from '../../stores/appStore';
 import { GUEST_PROFILE_ID } from '../history/GuestMeasurements';
-import { useBLEAutoConnect } from '../../hooks/useBLEAutoConnect';
+import { useBLE } from '../../hooks/useBLE';
 import type { RawMeasurement } from '../../../domain/calculations/types';
 import { calculateAllMetrics } from '../../../domain/calculations';
 
@@ -91,9 +92,11 @@ const InstructionStep: React.FC<{
 
 /**
  * First-time connection prompt
- * Shows when no device has been connected before
+ * Shows when no device has been configured - guides user to settings
  */
-const FirstTimeConnectionPrompt: React.FC<{ onConnect: () => void }> = ({ onConnect }) => {
+const FirstTimeConnectionPrompt: React.FC<{ onConfigure: () => void }> = ({ onConfigure }) => {
+  const { t } = useTranslation('measurement');
+
   return (
     <div className="text-center py-12">
       <div className="w-20 h-20 mx-auto rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6">
@@ -108,22 +111,24 @@ const FirstTimeConnectionPrompt: React.FC<{ onConnect: () => void }> = ({ onConn
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        Połącz z wagą
+        {t('panel.firstTime.title')}
       </h2>
       <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-        Kliknij przycisk poniżej, aby połączyć się z wagą Xiaomi przez Bluetooth.
-        Aplikacja zapamięta urządzenie i będzie automatycznie nasłuchiwać pomiarów.
+        {t('panel.firstTime.description')}
       </p>
-      <div className="mt-4 text-sm text-gray-400 dark:text-gray-500">
-        <p>Wskazówka: Wstań na wagę przed kliknięciem "Połącz" aby ją obudzić</p>
+      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg max-w-md mx-auto">
+        <p
+          className="text-blue-700 dark:text-blue-300 text-sm"
+          dangerouslySetInnerHTML={{ __html: t('panel.firstTime.instructions') }}
+        />
       </div>
       <Button
         variant="primary"
         size="lg"
         className="mt-6"
-        onClick={onConnect}
+        onClick={onConfigure}
       >
-        Połącz z wagą
+        {t('panel.firstTime.goToSettings')}
       </Button>
     </div>
   );
@@ -137,6 +142,8 @@ const SavedDeviceReconnectPrompt: React.FC<{
   onConnect: () => void;
   isConnecting: boolean;
 }> = ({ onConnect, isConnecting }) => {
+  const { t } = useTranslation('measurement');
+
   return (
     <div className="text-center py-12">
       <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${
@@ -155,19 +162,19 @@ const SavedDeviceReconnectPrompt: React.FC<{
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        {isConnecting ? 'Łączenie...' : 'Waga gotowa do połączenia'}
+        {isConnecting ? t('panel.reconnect.connecting') : t('panel.reconnect.ready')}
       </h2>
       <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
         {isConnecting
-          ? 'Wybierz wagę z listy urządzeń Bluetooth...'
-          : 'Twoja waga Mi Scale jest skonfigurowana. Kliknij poniżej aby aktywować nasłuchiwanie pomiarów.'
+          ? t('panel.reconnect.selectDevice')
+          : t('panel.reconnect.configured')
         }
       </p>
       {!isConnecting && (
         <>
           <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg max-w-md mx-auto">
             <p className="text-blue-700 dark:text-blue-300 text-sm">
-              <strong>Przed kliknięciem:</strong> Wstań na wagę aby ją obudzić, potem kliknij "Aktywuj nasłuchiwanie"
+              <strong>{t('panel.reconnect.beforeClick')}</strong> {t('panel.reconnect.beforeClickHint')}
             </p>
           </div>
           <Button
@@ -176,7 +183,7 @@ const SavedDeviceReconnectPrompt: React.FC<{
             className="mt-6"
             onClick={onConnect}
           >
-            Aktywuj nasłuchiwanie
+            {t('panel.reconnect.activateListening')}
           </Button>
         </>
       )}
@@ -196,6 +203,8 @@ const NoProfilesAvailable: React.FC<{
   onContinueAsGuest: () => void;
   onCreateProfile: () => void;
 }> = ({ onContinueAsGuest, onCreateProfile }) => {
+  const { t } = useTranslation('measurement');
+
   return (
     <div className="text-center py-12">
       <div className="w-20 h-20 mx-auto rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center mb-6">
@@ -211,10 +220,10 @@ const NoProfilesAvailable: React.FC<{
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        Brak profilu
+        {t('panel.noProfile.title')}
       </h2>
       <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-        Utwórz profil użytkownika, aby móc zapisywać i analizować wyniki pomiarów, lub kontynuuj jako gość.
+        {t('panel.noProfile.description')}
       </p>
       <div className="flex justify-center gap-4 mt-6">
         <Button
@@ -222,14 +231,14 @@ const NoProfilesAvailable: React.FC<{
           size="lg"
           onClick={onContinueAsGuest}
         >
-          Kontynuuj jako gość
+          {t('panel.noProfile.continueAsGuest')}
         </Button>
         <Button
           variant="primary"
           size="lg"
           onClick={onCreateProfile}
         >
-          Utworz profil
+          {t('panel.noProfile.createProfile')}
         </Button>
       </div>
     </div>
@@ -240,6 +249,7 @@ const NoProfilesAvailable: React.FC<{
  * MeasurementPanel component
  */
 export const MeasurementPanel: React.FC = () => {
+  const { t } = useTranslation('measurement');
   const [panelState, setPanelState] = React.useState<PanelState>('idle');
   const [pendingMeasurement, setPendingMeasurement] = React.useState<{
     raw: RawMeasurement;
@@ -259,8 +269,8 @@ export const MeasurementPanel: React.FC = () => {
   const currentProfile = useCurrentProfile();
   const { addNotification, setActiveTab } = useAppStore();
 
-  // BLE Auto-connect hook for background measurement listening
-  const bleAutoConnect = useBLEAutoConnect();
+  // Native BLE hook for measurement listening
+  const ble = useBLE();
 
   // Check if device is configured (saved from previous connection)
   const isDeviceConfigured = autoConnect && !!deviceMac;
@@ -286,32 +296,50 @@ export const MeasurementPanel: React.FC = () => {
     setActiveTab('settings');
   };
 
-  // Handle connect action - starts background listening
+  // Handle connect action - starts Native BLE scanning and listening
   // Defined before early returns that use it
   const handleConnect = async () => {
     setPanelState('connecting');
     setConnectionState('scanning');
 
     try {
-      // Use auto-connect to scan and connect
-      // This will also start background measurement listening
-      const connected = await bleAutoConnect.scanAndConnect();
+      // Use Native BLE to connect
+      // This starts scanning for the configured device
+      const connected = await ble.connect();
 
       if (connected) {
-        setConnectionState('connected');
+        // Connection state is managed by the BLE service
         setPanelState('ready');
-        // Note: Notification is shown by the auto-connect hook
+        addNotification({
+          type: 'success',
+          title: t('panel.listening.active'),
+          message: `${t('panel.status.connected')} ${ble.deviceName || 'Mi Scale'}`,
+          duration: 5000,
+        });
       } else {
-        // Connection failed or cancelled - notification is shown by auto-connect hook
+        // Connection failed - check if device is configured
         setConnectionState('disconnected');
         setPanelState('idle');
-        // Don't show duplicate notification - auto-connect hook handles it
+
+        if (!deviceMac) {
+          addNotification({
+            type: 'warning',
+            title: t('panel.listening.noConfiguredScale'),
+            message: t('panel.listening.goToSettings'),
+            duration: 8000,
+          });
+        }
       }
     } catch (error) {
       console.error('[MeasurementPanel] Connection error:', error);
       setConnectionState('disconnected');
       setPanelState('idle');
-      // Don't show duplicate notification - auto-connect hook handles it
+      addNotification({
+        type: 'error',
+        title: t('panel.error.connection'),
+        message: error instanceof Error ? error.message : t('panel.error.unknown'),
+        duration: 5000,
+      });
     }
   };
 
@@ -319,8 +347,8 @@ export const MeasurementPanel: React.FC = () => {
   // Show appropriate prompt based on state
   if (panelState === 'idle' || panelState === 'connecting') {
     if (!isDeviceConfigured) {
-      // First time - no device saved
-      return <FirstTimeConnectionPrompt onConnect={handleConnect} />;
+      // First time - no device configured, guide to settings
+      return <FirstTimeConnectionPrompt onConfigure={() => setActiveTab('settings')} />;
     } else if (connectionState !== 'connected' && connectionState !== 'reading') {
       // Device saved but not connected - show reconnect prompt
       return (
@@ -351,20 +379,20 @@ export const MeasurementPanel: React.FC = () => {
     // No active waiting needed - the hook will capture the measurement automatically
   };
 
-  // Effect to react to auto-captured measurements (only for manual measurement mode)
+  // Effect to react to captured measurements (from Native BLE)
   React.useEffect(() => {
-    // When auto-connect captures a measurement and we're in manual measuring mode
-    if (bleAutoConnect.lastMeasurement && panelState === 'measuring') {
+    // When Native BLE captures a measurement and we're in measuring mode (or ready state)
+    if (ble.lastMeasurement && (panelState === 'measuring' || panelState === 'ready')) {
       // Check if we already processed this measurement (prevent duplicates)
-      const measurementKey = bleAutoConnect.lastMeasurement.weightKg;
+      const measurementKey = ble.lastMeasurement.weightKg;
       if (lastProcessedMeasurementRef.current === measurementKey) {
         console.log('[MeasurementPanel] Skipping already processed measurement');
         return;
       }
       lastProcessedMeasurementRef.current = measurementKey;
 
-      const rawMeasurement = bleAutoConnect.lastMeasurement;
-      console.log('[MeasurementPanel] Processing measurement for manual mode:', rawMeasurement);
+      const rawMeasurement = ble.lastMeasurement;
+      console.log('[MeasurementPanel] Processing measurement:', rawMeasurement);
 
       setLiveWeight(rawMeasurement.weightKg);
       setIsStable(true);
@@ -389,14 +417,14 @@ export const MeasurementPanel: React.FC = () => {
       // Handle profile detection (this shows the result screen)
       handleProfileDetection(rawMeasurement, calculatedMetrics);
     }
-  }, [bleAutoConnect.lastMeasurement, panelState]);
+  }, [ble.lastMeasurement, panelState]);
 
-  // Effect to update connection state from auto-connect
+  // Effect to update connection state from Native BLE
   React.useEffect(() => {
-    if (bleAutoConnect.isConnected && panelState === 'connecting') {
+    if (ble.isConnected && panelState === 'connecting') {
       setPanelState('ready');
     }
-  }, [bleAutoConnect.isConnected, panelState]);
+  }, [ble.isConnected, panelState]);
 
   /**
    * Handle profile detection after measurement capture
@@ -495,7 +523,7 @@ export const MeasurementPanel: React.FC = () => {
   };
 
   // Handle save as guest from dialog
-  const handleSaveAsGuest = () => {
+  const handleSaveAsGuest = React.useCallback(() => {
     if (pendingMeasurement) {
       saveMeasurementToProfile(
         pendingMeasurement.raw,
@@ -507,12 +535,12 @@ export const MeasurementPanel: React.FC = () => {
 
       addNotification({
         type: 'info',
-        title: 'Zapisano jako gość',
-        message: 'Możesz przypisać pomiar do profilu później w "Pomiary gości"',
+        title: t('panel.guestSaved.title'),
+        message: t('panel.guestSaved.message'),
         duration: 5000,
       });
     }
-  };
+  }, [pendingMeasurement, t, addNotification]);
 
   // Handle cancel profile selection
   const handleCancelSelection = () => {
@@ -522,7 +550,7 @@ export const MeasurementPanel: React.FC = () => {
   };
 
   // Handle save measurement
-  const handleSave = async () => {
+  const handleSave = React.useCallback(async () => {
     if (!currentMeasurement.raw || !currentMeasurement.calculated) return;
 
     setSaving(true);
@@ -549,14 +577,14 @@ export const MeasurementPanel: React.FC = () => {
       const isGuestMeasurement = profileId === GUEST_PROFILE_ID;
       addNotification({
         type: 'success',
-        title: 'Pomiar zapisany',
+        title: t('panel.saved.title'),
         message: isGuestMeasurement
-          ? 'Wyniki zostały zapisane jako pomiar gościa.'
-          : 'Wyniki zostały zapisane do historii.',
+          ? t('panel.saved.guestMessage')
+          : t('panel.status.savedToHistory'),
         duration: 3000,
       });
     }, 500);
-  };
+  }, [currentMeasurement, currentProfile?.id, t, setSaving, addMeasurement, setCurrentMeasurement, addNotification]);
 
   // Handle discard measurement
   const handleDiscard = () => {
@@ -594,7 +622,7 @@ export const MeasurementPanel: React.FC = () => {
   // Get current profile display name
   const getProfileDisplayName = (): string => {
     if (!currentProfile) {
-      return 'Gość';
+      return t('common.guest');
     }
     return currentProfile.name;
   };
@@ -619,30 +647,30 @@ export const MeasurementPanel: React.FC = () => {
 
       {/* Idle state - show instructions */}
       {panelState === 'idle' && connectionState !== 'error' && (
-        <Card title="Jak wykonać pomiar" subtitle="Postępuj zgodnie z instrukcjami">
+        <Card title={t('panel.instructions.title')} subtitle={t('panel.instructions.subtitle')}>
           <div className="space-y-2">
             <InstructionStep
               number={1}
-              title="Połącz z wagą"
-              description="Upewnij się, że waga jest włączona i kliknij 'Połącz'"
+              title={t('panel.instructions.step1.title')}
+              description={t('panel.instructions.step1.description')}
               isActive={getCurrentStep() === 1}
             />
             <InstructionStep
               number={2}
-              title="Wejdź na wagę"
-              description="Po połączeniu stań na wadze boso"
+              title={t('panel.instructions.step2.title')}
+              description={t('panel.instructions.step2.description')}
               isActive={getCurrentStep() === 2}
             />
             <InstructionStep
               number={3}
-              title="Czekaj na wynik"
-              description="Stój nieruchomo aż waga ustabilizuje pomiar"
+              title={t('panel.instructions.step4.title')}
+              description={t('panel.instructions.step4.description')}
               isActive={getCurrentStep() === 3}
             />
             <InstructionStep
               number={4}
-              title="Zapisz pomiar"
-              description="Sprawdź wyniki i zapisz je do historii"
+              title={t('panel.instructions.step3.title')}
+              description={t('panel.instructions.step3.description')}
               isActive={getCurrentStep() === 4}
             />
           </div>
@@ -665,20 +693,20 @@ export const MeasurementPanel: React.FC = () => {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Nasłuchiwanie aktywne
+            {t('panel.listening.active')}
           </h2>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Połączono z: <span className="font-medium text-green-600">{bleAutoConnect.deviceName || 'Mi Scale'}</span>
+            {t('panel.status.connected')} <span className="font-medium text-green-600">{ble.deviceName || 'Mi Scale'}</span>
           </p>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Profil: <span className="font-medium">{getProfileDisplayName()}</span>
+            {t('panel.status.profile')} <span className="font-medium">{getProfileDisplayName()}</span>
             {profiles.length > 1 && (
-              <span className="text-sm ml-2">(automatyczne wykrywanie)</span>
+              <span className="text-sm ml-2">{t('panel.status.autoDetection')}</span>
             )}
           </p>
           <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
             <p className="text-green-700 dark:text-green-300 font-medium">
-              Wejdź na wagę - pomiar zostanie wykonany automatycznie
+              {t('panel.status.ready')}
             </p>
           </div>
           <Button
@@ -687,7 +715,7 @@ export const MeasurementPanel: React.FC = () => {
             className="mt-6"
             onClick={handleStartMeasurement}
           >
-            Ręczny pomiar
+            {t('panel.status.manual')}
           </Button>
         </Card>
       )}
@@ -698,7 +726,7 @@ export const MeasurementPanel: React.FC = () => {
           <LiveWeightDisplay weight={liveWeight} isStable={isStable} />
           <div className="text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Nie schodź z wagi
+              {t('panel.status.stayOnScale')}
             </p>
           </div>
         </Card>
@@ -721,8 +749,8 @@ export const MeasurementPanel: React.FC = () => {
       {/* Profile selection dialog for ambiguous detection */}
       <ProfileSelectionDialog
         isOpen={panelState === 'selecting-profile'}
-        title="Wybierz profil"
-        message="Wykryto niejednoznaczny pomiar. Wybierz, do którego profilu przypisać wynik."
+        title={t('panel.ambiguous.selectProfile')}
+        message={t('panel.ambiguous.message')}
         profiles={availableProfiles}
         onSelect={handleProfileSelect}
         onSaveAsGuest={handleSaveAsGuest}

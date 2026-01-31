@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   LineChart,
   Line,
@@ -140,6 +141,7 @@ const StatsCard: React.FC<{
  * Empty state component
  */
 const EmptyState: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { setActiveTab } = useAppStore();
 
   return (
@@ -157,10 +159,10 @@ const EmptyState: React.FC = () => {
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        Brak danych do wyswietlenia
+        {t('trendsChart.noData')}
       </h2>
       <p className="mt-2 text-gray-500 dark:text-gray-400 text-center max-w-md">
-        Wykonaj kilka pomiarow, aby zobaczyc trendy i analize zmian w czasie.
+        {t('trendsChart.noDataDescription')}
       </p>
       <Button
         variant="primary"
@@ -168,7 +170,7 @@ const EmptyState: React.FC = () => {
         className="mt-6"
         onClick={() => setActiveTab('measure')}
       >
-        Wykonaj pomiar
+        {t('trendsChart.takeMeasurement')}
       </Button>
     </div>
   );
@@ -196,6 +198,7 @@ const ChartSkeleton: React.FC = () => (
  * TrendsChart component
  */
 export const TrendsChart: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const filteredMeasurements = useFilteredMeasurements();
   const { selectedMetric, isLoading } = useMeasurementStore();
   const { isDarkMode } = useAppStore();
@@ -234,7 +237,7 @@ export const TrendsChart: React.FC = () => {
             {metricConfig.label}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {chartData.length} pomiarow w wybranym okresie
+            {t('trendsChart.measurements', { count: chartData.length })}
           </p>
         </div>
 
@@ -299,19 +302,19 @@ export const TrendsChart: React.FC = () => {
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
-          label="Minimum"
+          label={t('trendsChart.minimum')}
           value={`${stats.min.toFixed(1)} ${metricConfig.unit}`}
         />
         <StatsCard
-          label="Maksimum"
+          label={t('trendsChart.maximum')}
           value={`${stats.max.toFixed(1)} ${metricConfig.unit}`}
         />
         <StatsCard
-          label="Srednia"
+          label={t('trendsChart.average')}
           value={`${stats.avg.toFixed(1)} ${metricConfig.unit}`}
         />
         <StatsCard
-          label="Zmiana"
+          label={t('trendsChart.change')}
           value={`${stats.change >= 0 ? '+' : ''}${stats.change.toFixed(1)} ${metricConfig.unit}`}
           subtext={`${stats.changePercent >= 0 ? '+' : ''}${stats.changePercent.toFixed(1)}%`}
           color={stats.change >= 0 ? '#22c55e' : '#ef4444'}
@@ -319,7 +322,7 @@ export const TrendsChart: React.FC = () => {
       </div>
 
       {/* Quick metric cards */}
-      <Card title="Wszystkie metryki" subtitle="Ostatni pomiar">
+      <Card title={t('trendsChart.allMetrics')} subtitle={t('trendsChart.lastMeasurement')}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {METRIC_CONFIGS.filter((m) => m.id !== selectedMetric).slice(0, 4).map((metric) => {
             const latestValue = filteredMeasurements.length > 0

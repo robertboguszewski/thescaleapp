@@ -8,6 +8,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { useMeasurementStore, type Measurement } from '../../stores/measurementStore';
 import { useProfileStore } from '../../stores/profileStore';
@@ -128,24 +129,28 @@ const ActivityItemRow: React.FC<{
 /**
  * Empty state when no activities
  */
-const EmptyActivity: React.FC = () => (
-  <div className="text-center py-6">
-    <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-      <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 8v4l3 3" />
-        <circle cx="12" cy="12" r="9" />
-      </svg>
+const EmptyActivity: React.FC = () => {
+  const { t } = useTranslation('dashboard');
+  return (
+    <div className="text-center py-6">
+      <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 8v4l3 3" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        {t('activity.noActivities')}
+      </p>
     </div>
-    <p className="text-sm text-gray-500 dark:text-gray-400">
-      Brak ostatniej aktywnosci
-    </p>
-  </div>
-);
+  );
+};
 
 /**
  * RecentActivityFeed component
  */
 export const RecentActivityFeed: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { measurements } = useMeasurementStore();
   const { profiles } = useProfileStore();
   const { setActiveTab } = useAppStore();
@@ -164,8 +169,8 @@ export const RecentActivityFeed: React.FC = () => {
       items.push({
         id: `measurement-${measurement.id}`,
         type: 'measurement',
-        title: `Pomiar: ${measurement.raw.weightKg.toFixed(1)} kg`,
-        description: profile ? `Profil: ${profile.name}` : 'Pomiar bez profilu',
+        title: `${t('activity.measurement')}: ${measurement.raw.weightKg.toFixed(1)} kg`,
+        description: profile ? `${t('activity.profile')}: ${profile.name}` : `${t('activity.measurement')} ${t('activity.noProfile')}`,
         timestamp: new Date(measurement.timestamp),
         icon: 'measurement',
         data: {
@@ -191,7 +196,7 @@ export const RecentActivityFeed: React.FC = () => {
   };
 
   return (
-    <Card title="Ostatnia aktywnosc" className="h-full">
+    <Card title={t('activity.title')} className="h-full">
       {activities.length === 0 ? (
         <EmptyActivity />
       ) : (

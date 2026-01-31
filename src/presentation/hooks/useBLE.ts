@@ -1,337 +1,223 @@
 /**
  * useBLE Hook
  *
- * Custom React hook for BLE (Bluetooth Low Energy) operations.
- * Wraps IPC calls and manages Zustand store state for device connection.
+ * Consolidated BLE hook that provides access to BLE state and operations.
+ * Uses the BLEContext for actions and bleStore for state.
+ *
+ * This is the primary hook for components to interact with BLE functionality.
+ * It replaces the scattered state management from multiple hook instances.
  *
  * @module presentation/hooks/useBLE
  */
 
-import { useCallback, useEffect, useRef } from 'react';
-import {
-  useBLEStore,
-  useIsConnected,
-  useIsBusy,
-  useHasError,
-  useIsDeviceConfigured,
-  useCanRetry,
-  getStatusMessage,
-} from '../stores/bleStore';
-import type {
-  BLEConnectionState,
-  BLEError,
-  BLEStateChangeEvent,
-  BLEErrorEvent,
-} from '../../shared/types';
+import { useCallback } from 'react';
+import { useBLEContext } from '../contexts/BLEContext';
+import { useBLEStore } from '../stores/bleStore';
+import type { BLEConnectionState, BLEError, BLEDeviceInfo } from '../../application/ports/BLEPort';
 import type { RawMeasurement } from '../../domain/calculations/types';
 
 /**
- * BLE configuration input
+ * BLE Hook Return Type
  */
-interface BLEConfigInput {
-  deviceMac: string;
-  bleKey: string;
-}
-
-/**
- * Hook return type
- */
-interface UseBLEReturn {
-  // State
+export interface UseBLEReturn {
+  // Connection state
   connectionState: BLEConnectionState;
-  lastError: BLEError | null;
-  statusMessage: string;
+  isConnected: boolean;
+  isScanning: boolean;
+  isConnecting: boolean;
+
+  // Device info
+  deviceName: string | null;
+  deviceMac: string | null;
+
+  // Measurement data
   liveWeight: number | null;
   isStable: boolean;
-  isConnected: boolean;
-  isBusy: boolean;
-  hasError: boolean;
-  isDeviceConfigured: boolean;
-  canRetry: boolean;
-  retryCount: number;
+  lastMeasurement: RawMeasurement | null;
 
-  // Device config
-  deviceMac: string | null;
-  bleKey: string | null;
+  // Discovered devices (during scanning)
+  discoveredDevices: BLEDeviceInfo[];
+
+  // Error handling
+  lastError: BLEError | null;
+  clearError: () => void;
 
   // Actions
-  scan: () => Promise<boolean>;
-  connect: (config?: BLEConfigInput) => Promise<boolean>;
-  disconnect: () => Promise<boolean>;
-  setDeviceConfig: (config: BLEConfigInput) => void;
-  clearDeviceConfig: () => void;
-  setAutoConnect: (auto: boolean) => void;
-  retry: () => Promise<boolean>;
-  reset: () => void;
+  startScanning: () => Promise<boolean>;
+  stopScanning: () => Promise<boolean>;
+  setDevice: (mac: string) => Promise<boolean>;
+  connect: () => Promise<boolean>;
+  disconnect: () => Promise<void>;
+
+  // Status helpers
+  getStatusMessage: () => string;
+  getStatusColor: () => string;
 }
 
 /**
- * Custom hook for BLE operations
+ * Polish status messages
+ */
+const statusMessages: Record<BLEConnectionState, string> = {
+  disconnected: 'Rozlaczono',
+  scanning: 'Szukam wagi...',
+  connecting: 'Laczenie...',
+  connected: 'Polaczono',
+  reading: 'Odczyt pomiaru...',
+  error: 'Blad polaczenia',
+};
+
+/**
+ * Tailwind color classes for connection states
+ */
+const statusColors: Record<BLEConnectionState, string> = {
+  disconnected: 'text-gray-500',
+  scanning: 'text-yellow-500',
+  connecting: 'text-yellow-500',
+  connected: 'text-green-500',
+  reading: 'text-blue-500',
+  error: 'text-red-500',
+};
+
+/**
+ * Consolidated BLE Hook
  *
- * Provides a clean interface for:
- * - Scanning for devices
- * - Connecting/disconnecting from scale
- * - Managing connection state
- * - Auto-reconnect with retry logic
+ * Provides unified access to BLE functionality through the BLEContext and bleStore.
+ * This is the recommended way for components to interact with BLE.
  *
  * @example
- * ```typescript
- * const {
- *   connectionState,
- *   isConnected,
- *   connect,
- * } = useBLE();
+ * ```tsx
+ * function MyComponent() {
+ *   const { isConnected, liveWeight, startScanning, connectionState } = useBLE();
  *
- * // Connect to scale
- * const success = await connect({
- *   deviceMac: 'AA:BB:CC:DD:EE:FF',
- *   bleKey: 'your-ble-key',
- * });
+ *   if (!isConnected) {
+ *     return <button onClick={startScanning}>Connect</button>;
+ *   }
+ *
+ *   return <div>Weight: {liveWeight} kg</div>;
+ * }
  * ```
  */
 export function useBLE(): UseBLEReturn {
-  const store = useBLEStore();
-  const isConnected = useIsConnected();
-  const isBusy = useIsBusy();
-  const hasError = useHasError();
-  const isDeviceConfigured = useIsDeviceConfigured();
-  const canRetry = useCanRetry();
+  // Get context (provides service actions)
+  const context = useBLEContext();
 
-  // Cleanup refs for event listeners
-  const stateUnsubscribeRef = useRef<(() => void) | null>(null);
-  const errorUnsubscribeRef = useRef<(() => void) | null>(null);
+  // Get state from store (single source of truth)
+  const connectionState = useBLEStore((state) => state.connectionState);
+  const deviceName = useBLEStore((state) => state.deviceName);
+  const deviceMac = useBLEStore((state) => state.deviceMac);
+  const liveWeight = useBLEStore((state) => state.liveWeight);
+  const isStable = useBLEStore((state) => state.isStable);
+  const lastMeasurement = useBLEStore((state) => state.lastMeasurement);
+  const lastError = useBLEStore((state) => state.lastError);
+  const isScanning = useBLEStore((state) => state.isScanning);
+  const discoveredDevices = useBLEStore((state) => state.discoveredDevices);
 
-  const {
-    connectionState,
-    lastError,
-    deviceMac,
-    bleKey,
-    liveWeight,
-    isStable,
-    retryCount,
-    autoConnect,
-    setConnectionState,
-    setLastError,
-    setDeviceConfig: setDeviceConfigInStore,
-    clearDeviceConfig,
-    setLiveWeight,
-    setIsStable,
-    setIsScanning,
-    setAutoConnect,
-    incrementRetryCount,
-    resetRetryCount,
-    reset,
-  } = store;
+  // Store actions
+  const setLastError = useBLEStore((state) => state.setLastError);
+  const setConnectionState = useBLEStore((state) => state.setConnectionState);
+  const setDeviceConfig = useBLEStore((state) => state.setDeviceConfig);
 
-  /**
-   * Get status message for current state
-   */
-  const statusMessage = getStatusMessage(connectionState);
+  // Derived state
+  const isConnected = connectionState === 'connected' || connectionState === 'reading';
+  const isConnecting = connectionState === 'connecting';
 
-  /**
-   * Subscribe to BLE state changes from main process
-   */
-  useEffect(() => {
-    // Subscribe to state changes
-    stateUnsubscribeRef.current = window.electronAPI.onBLEStateChange(
-      (event: BLEStateChangeEvent) => {
-        setConnectionState(event.state);
-
-        if (event.state === 'scanning') {
-          setIsScanning(true);
-        } else {
-          setIsScanning(false);
-        }
-      }
-    );
-
-    // Subscribe to errors
-    errorUnsubscribeRef.current = window.electronAPI.onBLEError(
-      (event: BLEErrorEvent) => {
-        setLastError({
-          code: event.code,
-          message: event.message,
-          recoverable: event.recoverable,
-          suggestion: event.suggestion,
-        });
-        setConnectionState('error');
-      }
-    );
-
-    // Cleanup on unmount
-    return () => {
-      if (stateUnsubscribeRef.current) {
-        stateUnsubscribeRef.current();
-      }
-      if (errorUnsubscribeRef.current) {
-        errorUnsubscribeRef.current();
-      }
-    };
-  }, [setConnectionState, setLastError, setIsScanning]);
-
-  /**
-   * Scan for devices
-   */
-  const scan = useCallback(async (): Promise<boolean> => {
-    setConnectionState('scanning');
+  // Clear error action
+  const clearError = useCallback(() => {
     setLastError(null);
+  }, [setLastError]);
 
-    try {
-      const result = await window.electronAPI.scanForDevice();
+  // Start scanning action
+  const startScanning = useCallback(async (): Promise<boolean> => {
+    setConnectionState('scanning');
+    return context.startScanning();
+  }, [context, setConnectionState]);
 
-      if (result.success) {
-        return true;
-      } else {
-        console.error('Scan failed:', result.error);
-        return false;
-      }
-    } catch (err) {
-      console.error('Scan error:', err);
-      setConnectionState('error');
-      return false;
+  // Stop scanning action
+  const stopScanning = useCallback(async (): Promise<boolean> => {
+    const result = await context.stopScanning();
+    if (result) {
+      setConnectionState('disconnected');
     }
-  }, [setConnectionState, setLastError]);
+    return result;
+  }, [context, setConnectionState]);
 
-  /**
-   * Connect to the scale
-   */
-  const connect = useCallback(
-    async (config?: BLEConfigInput): Promise<boolean> => {
-      // Use provided config or stored config
-      const mac = config?.deviceMac || deviceMac;
-      const key = config?.bleKey || bleKey;
-
-      if (!mac || !key) {
-        console.error('Device not configured');
-        setLastError({
-          code: 'DEVICE_NOT_FOUND',
-          message: 'Urządzenie nie jest skonfigurowane',
-          recoverable: true,
-          suggestion: 'Skonfiguruj urządzenie w ustawieniach',
-        });
-        return false;
+  // Set device action
+  const setDevice = useCallback(
+    async (mac: string): Promise<boolean> => {
+      const result = await context.setDevice(mac);
+      if (result) {
+        setDeviceConfig({ deviceMac: mac });
       }
-
-      // Save config if provided
-      if (config) {
-        setDeviceConfigInStore({
-          deviceMac: config.deviceMac,
-          bleKey: config.bleKey,
-        });
-      }
-
-      setConnectionState('connecting');
-      setLastError(null);
-
-      try {
-        const result = await window.electronAPI.connectDevice(mac, key);
-
-        if (result.success) {
-          setConnectionState('connected');
-          resetRetryCount();
-          return true;
-        } else {
-          console.error('Connect failed:', result.error);
-          incrementRetryCount();
-          return false;
-        }
-      } catch (err) {
-        console.error('Connect error:', err);
-        setConnectionState('error');
-        incrementRetryCount();
-        return false;
-      }
+      return result;
     },
-    [
-      deviceMac,
-      bleKey,
-      setConnectionState,
-      setLastError,
-      setDeviceConfigInStore,
-      resetRetryCount,
-      incrementRetryCount,
-    ]
+    [context, setDeviceConfig]
   );
 
-  /**
-   * Disconnect from the scale
-   */
-  const disconnect = useCallback(async (): Promise<boolean> => {
-    try {
-      const result = await window.electronAPI.disconnectDevice();
-
-      if (result.success) {
-        setConnectionState('disconnected');
-        setLiveWeight(null);
-        setIsStable(false);
-        return true;
-      } else {
-        console.error('Disconnect failed:', result.error);
-        return false;
-      }
-    } catch (err) {
-      console.error('Disconnect error:', err);
-      return false;
-    }
-  }, [setConnectionState, setLiveWeight, setIsStable]);
-
-  /**
-   * Set device configuration
-   */
-  const setDeviceConfig = useCallback(
-    (config: BLEConfigInput): void => {
-      setDeviceConfigInStore(config);
-    },
-    [setDeviceConfigInStore]
-  );
-
-  /**
-   * Retry connection
-   */
-  const retry = useCallback(async (): Promise<boolean> => {
-    if (!canRetry) {
-      console.warn('Max retries reached');
+  // Connect action - starts scanning for configured device
+  const connect = useCallback(async (): Promise<boolean> => {
+    if (!deviceMac) {
+      console.warn('[useBLE] Cannot connect - no device MAC configured');
       return false;
     }
 
-    return connect();
-  }, [canRetry, connect]);
+    setConnectionState('connecting');
+    await context.setDevice(deviceMac);
+    return context.startScanning();
+  }, [context, deviceMac, setConnectionState]);
 
-  /**
-   * Auto-connect on mount if configured
-   */
-  useEffect(() => {
-    if (autoConnect && isDeviceConfigured && connectionState === 'disconnected') {
-      connect();
-    }
-  }, [autoConnect, isDeviceConfigured]); // Only run on mount and config changes
+  // Disconnect action
+  const disconnect = useCallback(async (): Promise<void> => {
+    await context.stopScanning();
+    setConnectionState('disconnected');
+  }, [context, setConnectionState]);
+
+  // Get status message
+  const getStatusMessage = useCallback((): string => {
+    return statusMessages[connectionState] || 'Nieznany';
+  }, [connectionState]);
+
+  // Get status color
+  const getStatusColor = useCallback((): string => {
+    return statusColors[connectionState] || 'text-gray-500';
+  }, [connectionState]);
 
   return {
-    // State
+    // Connection state
     connectionState,
-    lastError,
-    statusMessage,
+    isConnected,
+    isScanning,
+    isConnecting,
+
+    // Device info
+    deviceName,
+    deviceMac,
+
+    // Measurement data
     liveWeight,
     isStable,
-    isConnected,
-    isBusy,
-    hasError,
-    isDeviceConfigured,
-    canRetry,
-    retryCount,
+    lastMeasurement,
 
-    // Device config
-    deviceMac,
-    bleKey,
+    // Discovered devices
+    discoveredDevices,
+
+    // Error handling
+    lastError,
+    clearError,
 
     // Actions
-    scan,
+    startScanning,
+    stopScanning,
+    setDevice,
     connect,
     disconnect,
-    setDeviceConfig,
-    clearDeviceConfig,
-    setAutoConnect,
-    retry,
-    reset,
+
+    // Status helpers
+    getStatusMessage,
+    getStatusColor,
   };
 }
+
+/**
+ * Export type for external use
+ */
+export type { BLEConnectionState, BLEError, BLEDeviceInfo, RawMeasurement };

@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { ProfileEditor } from './ProfileEditor';
@@ -129,6 +130,7 @@ const ProfileListItem: React.FC<{
  * Profiles section
  */
 const ProfilesSection: React.FC = () => {
+  const { t } = useTranslation('settings');
   const { profiles, setEditingProfileId, setIsEditing, removeProfile, setCurrentProfileId, isEditing } = useProfileStore();
   const currentProfile = useCurrentProfile();
   const { addNotification } = useAppStore();
@@ -147,8 +149,8 @@ const ProfilesSection: React.FC = () => {
     if (profiles.length <= 1) {
       addNotification({
         type: 'warning',
-        title: 'Nie można usunąć',
-        message: 'Musisz mieć przynajmniej jeden profil',
+        title: t('profiles.cannotDelete'),
+        message: t('profiles.mustHaveOneProfile'),
         duration: 4000,
       });
       return;
@@ -156,7 +158,7 @@ const ProfilesSection: React.FC = () => {
     removeProfile(id);
     addNotification({
       type: 'success',
-      title: 'Profil usunięty',
+      title: t('profiles.deleted'),
       duration: 3000,
     });
   };
@@ -169,13 +171,13 @@ const ProfilesSection: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Profile użytkowników</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('profiles.title')}</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Zarządzaj profilami do pomiarów
+            {t('profiles.description')}
           </p>
         </div>
         <Button variant="primary" onClick={handleNewProfile}>
-          Nowy profil
+          {t('profileEditor.newProfile')}
         </Button>
       </div>
 
@@ -301,8 +303,8 @@ const AboutSection: React.FC = () => {
 
     addNotification({
       type: 'success',
-      title: 'Konfiguracja zresetowana',
-      message: 'Odswiez aplikacje aby zobaczyc ekran onboardingu',
+      title: t('about.resetSuccess'),
+      message: t('about.resetSuccessMessage'),
       duration: 5000,
     });
 
@@ -420,12 +422,13 @@ const AboutSection: React.FC = () => {
  * Settings component
  */
 export const Settings: React.FC = () => {
+  const { t } = useTranslation('settings');
   const { settingsSubTab, setSettingsSubTab } = useAppStore();
 
   const tabs: Array<{ id: SettingsSubTab; label: string; icon: React.ReactNode }> = [
     {
       id: 'profiles',
-      label: 'Profile',
+      label: t('tabs.profiles'),
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -437,7 +440,7 @@ export const Settings: React.FC = () => {
     },
     {
       id: 'device',
-      label: 'Urządzenie',
+      label: t('tabs.device'),
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11" />
@@ -446,7 +449,7 @@ export const Settings: React.FC = () => {
     },
     {
       id: 'appearance',
-      label: 'Wyglad',
+      label: t('tabs.appearance'),
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="5" />
@@ -456,7 +459,7 @@ export const Settings: React.FC = () => {
     },
     {
       id: 'about',
-      label: 'O aplikacji',
+      label: t('tabs.about'),
       icon: (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="10" />

@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppStore, Tab } from '../../stores/appStore';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -16,6 +17,7 @@ import { MeasurementPanel } from '../measurement/MeasurementPanel';
 import { HistoryList } from '../history/HistoryList';
 import { TrendsChart } from '../trends/TrendsChart';
 import { Settings } from '../settings/Settings';
+import { AnalysisPage } from '../analysis';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { ErrorMessage } from '../common/ErrorMessage';
 
@@ -144,33 +146,6 @@ const NotificationsContainer: React.FC = () => {
 };
 
 /**
- * Analysis placeholder component
- */
-const AnalysisPage: React.FC = () => (
-  <div className="flex items-center justify-center h-full">
-    <div className="text-center">
-      <svg
-        className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <path d="M14 2v6h6" />
-        <path d="M16 13H8M16 17H8M10 9H8" />
-      </svg>
-      <h2 className="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
-        Analiza zdrowotna
-      </h2>
-      <p className="mt-2 text-gray-500 dark:text-gray-400">
-        Szczegolowa analiza skladu ciala bedzie tutaj dostepna.
-      </p>
-    </div>
-  </div>
-);
-
-/**
  * Render the appropriate content based on active tab
  */
 const TabContent: React.FC<{ tab: Tab }> = ({ tab }) => {
@@ -196,13 +171,14 @@ const TabContent: React.FC<{ tab: Tab }> = ({ tab }) => {
  * Global loading overlay
  */
 const GlobalLoadingOverlay: React.FC = () => {
+  const { t } = useTranslation('common');
   const { isGlobalLoading, globalLoadingMessage } = useAppStore();
 
   if (!isGlobalLoading) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-      <LoadingSpinner size="lg" message={globalLoadingMessage || 'Ladowanie...'} />
+      <LoadingSpinner size="lg" message={globalLoadingMessage || t('status.loading')} />
     </div>
   );
 };

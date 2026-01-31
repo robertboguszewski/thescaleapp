@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { useCurrentProfile, useProfileStore } from '../../stores/profileStore';
 import { useIsDeviceConfigured, useBLEStore } from '../../stores/bleStore';
@@ -15,22 +16,22 @@ import { useLatestMeasurement } from '../../stores/measurementStore';
 import { useAppStore } from '../../stores/appStore';
 
 /**
- * Format relative time in Polish
+ * Format relative time using i18n
  */
-const formatRelativeTime = (date: Date): string => {
+const formatRelativeTime = (date: Date, t: (key: string, options?: Record<string, unknown>) => string, language: string): string => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  if (diffMinutes < 1) return 'przed chwila';
-  if (diffMinutes < 60) return `${diffMinutes} min temu`;
-  if (diffHours < 24) return `${diffHours} godz. temu`;
-  if (diffDays === 1) return 'wczoraj';
-  if (diffDays < 7) return `${diffDays} dni temu`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} tyg. temu`;
-  return date.toLocaleDateString('pl-PL');
+  if (diffMinutes < 1) return t('statusOverview.time.justNow');
+  if (diffMinutes < 60) return t('statusOverview.time.minutesAgo', { count: diffMinutes });
+  if (diffHours < 24) return t('statusOverview.time.hoursAgo', { count: diffHours });
+  if (diffDays === 1) return t('common:time.yesterday');
+  if (diffDays < 7) return t('common:time.daysAgo', { count: diffDays });
+  if (diffDays < 30) return t('statusOverview.time.weeksAgo', { count: Math.floor(diffDays / 7) });
+  return date.toLocaleDateString(language === 'pl' ? 'pl-PL' : 'en-US');
 };
 
 /**
@@ -79,6 +80,7 @@ const StatusItem: React.FC<{
  * StatusOverviewPanel component
  */
 export const StatusOverviewPanel: React.FC = () => {
+  const { t, i18n } = useTranslation(['dashboard', 'common', 'ble']);
   const currentProfile = useCurrentProfile();
   const { profiles } = useProfileStore();
   const isDeviceConfigured = useIsDeviceConfigured();
@@ -89,44 +91,44 @@ export const StatusOverviewPanel: React.FC = () => {
   // Calculate weight display
   const weightDisplay = latestMeasurement
     ? `${latestMeasurement.raw.weightKg.toFixed(1)} kg`
-    : 'Brak danych';
+    : t('statusOverview.noData');
 
   // Calculate last measurement time
   const lastMeasurementTime = latestMeasurement
-    ? formatRelativeTime(new Date(latestMeasurement.timestamp))
-    : 'Brak pomiarow';
+    ? formatRelativeTime(new Date(latestMeasurement.timestamp), t, i18n.language)
+    : t('statusOverview.noData');
 
   // Profile status
   const profileValue = currentProfile
     ? currentProfile.name
     : profiles.length > 0
-    ? 'Wybierz profil'
-    : 'Brak profili';
+    ? t('statusOverview.profile')
+    : t('statusOverview.noData');
   const profileStatus: 'good' | 'warning' | 'neutral' = currentProfile ? 'good' : 'warning';
 
   // Device status
   const getDeviceStatus = (): { value: string; status: 'good' | 'warning' | 'neutral' } => {
     if (!isDeviceConfigured) {
-      return { value: 'Nie skonfigurowano', status: 'warning' };
+      return { value: t('statusOverview.notConfigured'), status: 'warning' };
     }
     switch (connectionState) {
       case 'connected':
       case 'reading':
-        return { value: 'Połączone', status: 'good' };
+        return { value: t('ble:status.connected'), status: 'good' };
       case 'connecting':
       case 'scanning':
-        return { value: 'Łączenie...', status: 'neutral' };
+        return { value: t('ble:status.connecting'), status: 'neutral' };
       case 'error':
-        return { value: 'Błąd połączenia', status: 'warning' };
+        return { value: t('ble:status.error'), status: 'warning' };
       default:
-        return { value: 'Rozłączone', status: 'neutral' };
+        return { value: t('ble:status.disconnected'), status: 'neutral' };
     }
   };
 
   const deviceStatus = getDeviceStatus();
 
   return (
-    <Card title="Status" className="h-full">
+    <Card title={t('statusOverview.title')} className="h-full">
       <div className="divide-y divide-gray-100 dark:divide-gray-800">
         {/* Weight */}
         <StatusItem
@@ -136,7 +138,7 @@ export const StatusOverviewPanel: React.FC = () => {
               <path d="M12 7v10M7 12h10" />
             </svg>
           }
-          label="Aktualna waga"
+          label={t('statusOverview.currentWeight')}
           value={weightDisplay}
           status={latestMeasurement ? 'good' : 'neutral'}
           onClick={() => setActiveTab('measure')}
@@ -150,7 +152,7 @@ export const StatusOverviewPanel: React.FC = () => {
               <circle cx="12" cy="7" r="4" />
             </svg>
           }
-          label="Profil"
+          label={t('statusOverview.profile')}
           value={profileValue}
           status={profileStatus}
           onClick={() => {
@@ -166,7 +168,7 @@ export const StatusOverviewPanel: React.FC = () => {
               <path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11" />
             </svg>
           }
-          label="Urządzenie"
+          label={t('statusOverview.device')}
           value={deviceStatus.value}
           status={deviceStatus.status}
           onClick={() => {
@@ -183,7 +185,7 @@ export const StatusOverviewPanel: React.FC = () => {
               <path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
           }
-          label="Ostatni pomiar"
+          label={t('statusOverview.lastMeasurement')}
           value={lastMeasurementTime}
           status={latestMeasurement ? 'neutral' : 'warning'}
           onClick={() => setActiveTab('history')}

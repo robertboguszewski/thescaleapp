@@ -9,7 +9,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { AppLayout } from './components/layout';
-import { useProfile, useBLEAutoConnect } from './hooks';
+import { useProfile, useMeasurement } from './hooks';
+import { useBLE } from './hooks/useBLE';
 import { useBLEStore } from './stores/bleStore';
 
 /**
@@ -24,8 +25,12 @@ export function App(): React.ReactElement {
   // and sets up the profile state in the store
   useProfile();
 
-  // Initialize BLE auto-connect service
-  const { startAutoConnect, isAutoConnecting, isConnected } = useBLEAutoConnect();
+  // Load measurements when profile changes - this hook auto-loads
+  // measurements for the current profile via useEffect
+  useMeasurement();
+
+  // Get BLE state from the new unified hook
+  const { isConnected, isConnecting, connect } = useBLE();
   const { autoConnect, deviceMac } = useBLEStore();
 
   // Track if auto-connect was already started (prevent multiple calls)
@@ -35,19 +40,19 @@ export function App(): React.ReactElement {
   useEffect(() => {
     if (autoConnect && deviceMac && !autoConnectStartedRef.current) {
       autoConnectStartedRef.current = true;
-      console.log('[App] Auto-connect enabled, starting BLE service...');
-      startAutoConnect();
+      console.log('[App] Auto-connect enabled, starting BLE connection...');
+      connect();
     }
-  }, [autoConnect, deviceMac]); // Removed startAutoConnect from deps
+  }, [autoConnect, deviceMac]); // Removed connect from deps to prevent loops
 
   // Log connection status changes
   useEffect(() => {
     if (isConnected) {
       console.log('[App] BLE connected - ready to receive measurements');
-    } else if (isAutoConnecting) {
-      console.log('[App] BLE auto-connecting...');
+    } else if (isConnecting) {
+      console.log('[App] BLE connecting...');
     }
-  }, [isConnected, isAutoConnecting]);
+  }, [isConnected, isConnecting]);
 
   return <AppLayout />;
 }

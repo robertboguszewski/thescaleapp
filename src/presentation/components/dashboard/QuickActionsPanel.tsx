@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { useAppStore, type Tab } from '../../stores/appStore';
 
@@ -63,34 +64,34 @@ const SettingsIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 /**
- * Quick actions configuration
+ * Quick actions configuration with i18n support
  */
-const quickActions: QuickAction[] = [
+const getQuickActions = (t: (key: string) => string): QuickAction[] => [
   {
     id: 'measure',
-    label: 'Nowy pomiar',
-    description: 'Wykonaj pomiar masy ciala',
+    label: t('quickActions.newMeasurement'),
+    description: t('quickActions.newMeasurementDesc'),
     icon: <ScaleIcon className="w-6 h-6" />,
     color: 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400',
   },
   {
     id: 'history',
-    label: 'Historia',
-    description: 'Przegladaj poprzednie pomiary',
+    label: t('quickActions.viewHistory'),
+    description: t('quickActions.viewHistoryDesc'),
     icon: <HistoryIcon className="w-6 h-6" />,
     color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
   },
   {
     id: 'trends',
-    label: 'Trendy',
-    description: 'Analizuj zmiany w czasie',
+    label: t('quickActions.viewTrends'),
+    description: t('quickActions.viewTrendsDesc'),
     icon: <TrendsIcon className="w-6 h-6" />,
     color: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
   },
   {
     id: 'settings',
-    label: 'Ustawienia',
-    description: 'Konfiguruj aplikacje',
+    label: t('quickActions.settings'),
+    description: t('quickActions.settingsDesc'),
     icon: <SettingsIcon className="w-6 h-6" />,
     color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
   },
@@ -135,10 +136,12 @@ const QuickActionButton: React.FC<{
  * QuickActionsPanel component
  */
 export const QuickActionsPanel: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { setActiveTab } = useAppStore();
+  const quickActions = getQuickActions(t);
 
   return (
-    <Card title="Szybkie akcje" className="h-full">
+    <Card title={t('quickActions.title')} className="h-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {quickActions.map((action) => (
           <QuickActionButton

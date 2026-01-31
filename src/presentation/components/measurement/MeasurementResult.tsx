@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { MiniBodyScoreGauge } from '../dashboard/BodyScoreGauge';
@@ -62,6 +63,8 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
   onNewMeasurement,
   isLoading = false,
 }) => {
+  const { t, i18n } = useTranslation('measurement');
+
   return (
     <div className="space-y-6">
       {/* Success header */}
@@ -79,10 +82,10 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Pomiar zakonczony
+          {t('result.title')}
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {timestamp.toLocaleString('pl-PL', {
+          {timestamp.toLocaleString(i18n.language === 'pl' ? 'pl-PL' : 'en-US', {
             dateStyle: 'medium',
             timeStyle: 'short',
           })}
@@ -95,7 +98,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
           <MiniBodyScoreGauge score={calculated.bodyScore} size={80} />
           <div className="text-left">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Wynik ogolny
+              {t('result.overallScore')}
             </p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {calculated.bodyScore}
@@ -108,36 +111,36 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
       {/* Main metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weight and BMI */}
-        <Card title="Podstawowe">
+        <Card title={t('result.sections.basic')}>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            <MetricRow label="Waga" value={raw.weightKg.toFixed(1)} unit="kg" highlight />
+            <MetricRow label={t('result.weight')} value={raw.weightKg.toFixed(1)} unit="kg" highlight />
             <MetricRow label="BMI" value={calculated.bmi.toFixed(1)} />
             {raw.impedanceOhm && (
-              <MetricRow label="Impedancja" value={raw.impedanceOhm} unit="Ohm" />
+              <MetricRow label={t('result.metrics.impedance')} value={raw.impedanceOhm} unit="Ohm" />
             )}
             {raw.heartRateBpm && (
-              <MetricRow label="Tetno" value={raw.heartRateBpm} unit="BPM" />
+              <MetricRow label={t('result.metrics.heartRate')} value={raw.heartRateBpm} unit="BPM" />
             )}
           </div>
         </Card>
 
         {/* Body composition */}
-        <Card title="Sklad ciala">
+        <Card title={t('result.sections.bodyComposition')}>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            <MetricRow label="Tkanka tluszczowa" value={calculated.bodyFatPercent.toFixed(1)} unit="%" />
-            <MetricRow label="Masa miesniowa" value={calculated.muscleMassKg.toFixed(1)} unit="kg" />
-            <MetricRow label="Woda w organizmie" value={calculated.bodyWaterPercent.toFixed(1)} unit="%" />
-            <MetricRow label="Masa beztluszczowa" value={calculated.leanBodyMassKg.toFixed(1)} unit="kg" />
+            <MetricRow label={t('result.metrics.bodyFat')} value={calculated.bodyFatPercent.toFixed(1)} unit="%" />
+            <MetricRow label={t('result.metrics.muscleMass')} value={calculated.muscleMassKg.toFixed(1)} unit="kg" />
+            <MetricRow label={t('result.metrics.bodyWater')} value={calculated.bodyWaterPercent.toFixed(1)} unit="%" />
+            <MetricRow label={t('result.metrics.leanBodyMass')} value={calculated.leanBodyMassKg.toFixed(1)} unit="kg" />
           </div>
         </Card>
 
         {/* Additional metrics */}
-        <Card title="Dodatkowe">
+        <Card title={t('result.sections.additional')}>
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            <MetricRow label="Tluszcz trzewny" value={calculated.visceralFatLevel} />
-            <MetricRow label="BMR" value={Math.round(calculated.bmrKcal)} unit="kcal" />
-            <MetricRow label="Masa kostna" value={calculated.boneMassKg.toFixed(1)} unit="kg" />
-            <MetricRow label="Bialko" value={calculated.proteinPercent.toFixed(1)} unit="%" />
+            <MetricRow label={t('result.metrics.visceralFat')} value={calculated.visceralFatLevel} />
+            <MetricRow label={t('result.metrics.bmr')} value={Math.round(calculated.bmrKcal)} unit="kcal" />
+            <MetricRow label={t('result.metrics.boneMass')} value={calculated.boneMassKg.toFixed(1)} unit="kg" />
+            <MetricRow label={t('result.metrics.protein')} value={calculated.proteinPercent.toFixed(1)} unit="%" />
           </div>
         </Card>
       </div>
@@ -152,7 +155,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
               onClick={onSave}
               loading={isLoading}
             >
-              Zapisz pomiar
+              {t('result.save')}
             </Button>
             <Button
               variant="outline"
@@ -160,7 +163,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
               onClick={onDiscard}
               disabled={isLoading}
             >
-              Odrzuc
+              {t('result.discard')}
             </Button>
           </>
         ) : (
@@ -170,7 +173,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
               size="lg"
               onClick={onNewMeasurement}
             >
-              Nowy pomiar
+              {t('result.new')}
             </Button>
             <Button
               variant="outline"
@@ -179,7 +182,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
                 // Navigate to history or dashboard
               }}
             >
-              Zobacz historie
+              {t('result.viewHistory')}
             </Button>
           </>
         )}
@@ -192,7 +195,7 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
             <path d="M9 12l2 2 4-4" />
             <circle cx="12" cy="12" r="10" />
           </svg>
-          <span className="text-sm font-medium">Pomiar zapisany</span>
+          <span className="text-sm font-medium">{t('result.saved')}</span>
         </div>
       )}
     </div>
@@ -205,23 +208,27 @@ export const MeasurementResult: React.FC<MeasurementResultProps> = ({
 export const LiveWeightDisplay: React.FC<{
   weight: number | null;
   isStable: boolean;
-}> = ({ weight, isStable }) => (
-  <div className="text-center py-8">
-    <div className={`text-6xl font-bold transition-colors ${isStable ? 'text-green-500' : 'text-gray-900 dark:text-white'}`}>
-      {weight !== null ? weight.toFixed(1) : '--.-'}
-      <span className="text-2xl text-gray-400 ml-2">kg</span>
-    </div>
-    <p className={`mt-4 text-sm ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-      {isStable ? 'Waga ustabilizowana' : 'Czekam na stabilizacje...'}
-    </p>
-    {!isStable && (
-      <div className="flex justify-center gap-1 mt-4">
-        <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+}> = ({ weight, isStable }) => {
+  const { t } = useTranslation('measurement');
+
+  return (
+    <div className="text-center py-8">
+      <div className={`text-6xl font-bold transition-colors ${isStable ? 'text-green-500' : 'text-gray-900 dark:text-white'}`}>
+        {weight !== null ? weight.toFixed(1) : '--.-'}
+        <span className="text-2xl text-gray-400 ml-2">kg</span>
       </div>
-    )}
-  </div>
-);
+      <p className={`mt-4 text-sm ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+        {isStable ? t('result.stable') : t('result.stabilizing')}
+      </p>
+      {!isStable && (
+        <div className="flex justify-center gap-1 mt-4">
+          <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default MeasurementResult;

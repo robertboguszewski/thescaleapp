@@ -9,6 +9,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { ErrorMessage } from '../common/ErrorMessage';
@@ -187,8 +188,10 @@ const DeviceListItem: React.FC<{
  * DeviceSettings component
  */
 export const DeviceSettings: React.FC = () => {
+  const { t } = useTranslation(['settings', 'common', 'ble']);
   const {
     deviceMac,
+    deviceName,
     bleKey,
     autoConnect,
     scanTimeout,
@@ -210,12 +213,17 @@ export const DeviceSettings: React.FC = () => {
   // Local form state
   const [localMac, setLocalMac] = React.useState(deviceMac || '');
   const [localKey, setLocalKey] = React.useState(bleKey || '');
+  const [localName, setLocalName] = React.useState(deviceName || '');
   const [hasChanges, setHasChanges] = React.useState(false);
 
   // Track changes
   React.useEffect(() => {
-    setHasChanges(localMac !== (deviceMac || '') || localKey !== (bleKey || ''));
-  }, [localMac, localKey, deviceMac, bleKey]);
+    setHasChanges(
+      localMac !== (deviceMac || '') ||
+      localKey !== (bleKey || '') ||
+      localName !== (deviceName || '')
+    );
+  }, [localMac, localKey, localName, deviceMac, bleKey, deviceName]);
 
   // Sync local state when store is updated externally (e.g., from XiaomiCloudLogin)
   React.useEffect(() => {
@@ -225,7 +233,10 @@ export const DeviceSettings: React.FC = () => {
     if (bleKey && bleKey !== localKey) {
       setLocalKey(bleKey);
     }
-  }, [deviceMac, bleKey]);
+    if (deviceName && deviceName !== localName) {
+      setLocalName(deviceName);
+    }
+  }, [deviceMac, bleKey, deviceName]);
 
   // Setup device discovery listener
   useEffect(() => {
@@ -269,8 +280,8 @@ export const DeviceSettings: React.FC = () => {
     if (!isValidMac(localMac)) {
       addNotification({
         type: 'error',
-        title: 'Nieprawidlowy adres MAC',
-        message: 'Format: XX:XX:XX:XX:XX:XX',
+        title: t('device.invalidMac'),
+        message: t('device.invalidMacFormat'),
         duration: 5000,
       });
       return;
@@ -279,17 +290,21 @@ export const DeviceSettings: React.FC = () => {
     if (!isValidKey(localKey)) {
       addNotification({
         type: 'error',
-        title: 'Nieprawidlowy klucz BLE',
-        message: 'Klucz musi miec 24 lub 32 znaki szesnastkowe',
+        title: t('device.invalidKey'),
+        message: t('device.invalidKeyFormat'),
         duration: 5000,
       });
       return;
     }
 
-    setDeviceConfig({ deviceMac: localMac, bleKey: localKey });
+    setDeviceConfig({
+      deviceMac: localMac,
+      bleKey: localKey,
+      deviceName: localName || undefined,
+    });
     addNotification({
       type: 'success',
-      title: 'Ustawienia zapisane',
+      title: t('device.saved'),
       duration: 3000,
     });
   };
@@ -299,53 +314,83 @@ export const DeviceSettings: React.FC = () => {
     clearDeviceConfig();
     setLocalMac('');
     setLocalKey('');
+    setLocalName('');
     addNotification({
       type: 'info',
-      title: 'Konfiguracja wyczyszczona',
+      title: t('device.cleared'),
       duration: 3000,
     });
   };
 
-  // Handle scan for devices
+  // Handle scan for devices using Native BLE (noble)
   const handleScanForDevices = async () => {
-    if (!window.electronAPI) {
-      addNotification({
-        type: 'error',
-        title: 'Błąd',
-        message: 'Electron API niedostępne',
-        duration: 5000,
-      });
-      return;
-    }
-
     clearDiscoveredDevices();
     setIsScanning(true);
 
+    // Setup listener for discovered devices
+    const unsubscribeDiscovered = window.electronAPI.nativeBLE.onDiscovered((device) => {
+      console.log('[DeviceSettings] Device discovered:', device);
+      const bleDevice: BLEDeviceInfo = {
+        mac: device.id,
+        name: device.name || 'Mi Scale',
+        rssi: -50,
+      };
+      addDiscoveredDevice(bleDevice);
+
+      // Auto-select first device found
+      if (!localMac) {
+        setLocalMac(device.id);
+        setLocalName(device.name || 'Mi Scale');
+      }
+    });
+
+    // Setup error listener
+    const unsubscribeError = window.electronAPI.nativeBLE.onError((error) => {
+      console.error('[DeviceSettings] BLE error:', error);
+      addNotification({
+        type: 'error',
+        title: t('device.scanError'),
+        message: error,
+        duration: 5000,
+      });
+    });
+
     try {
-      const response = await window.electronAPI.scanForDevices(scanTimeout);
-      if (response.success) {
+      console.log('[DeviceSettings] Starting Native BLE scan...');
+
+      // Start scanning via native BLE
+      const result = await window.electronAPI.nativeBLE.startScanning();
+
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Failed to start scanning');
+      }
+
+      // Wait for scan duration (10 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+
+      // Stop scanning
+      await window.electronAPI.nativeBLE.stopScanning();
+
+      // Check if we found any devices
+      if (discoveredDevices.length > 0) {
         addNotification({
           type: 'success',
-          title: 'Skanowanie zakończone',
-          message: `Znaleziono ${response.data?.length || 0} urządzeń`,
-          duration: 3000,
+          title: t('device.scanComplete'),
+          message: t('device.foundDevices', { count: discoveredDevices.length }),
+          duration: 8000,
         });
       } else {
         addNotification({
           type: 'error',
-          title: 'Błąd skanowania',
-          message: response.error?.message || 'Nieznany błąd',
+          title: t('device.scanError'),
+          message: errorMessage,
           duration: 5000,
         });
       }
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        title: 'Błąd skanowania',
-        message: error instanceof Error ? error.message : 'Nieznany błąd',
-        duration: 5000,
-      });
     } finally {
+      // Cleanup listeners
+      unsubscribeDiscovered();
+      unsubscribeError();
       setIsScanning(false);
     }
   };
@@ -353,17 +398,18 @@ export const DeviceSettings: React.FC = () => {
   // Handle stop scan
   const handleStopScan = async () => {
     if (!window.electronAPI) return;
-    await window.electronAPI.stopScan();
+    await window.electronAPI.nativeBLE.stopScanning();
     setIsScanning(false);
   };
 
   // Handle device selection
   const handleSelectDevice = (device: BLEDeviceInfo) => {
     setLocalMac(device.mac);
+    setLocalName(device.name || 'Mi Scale');
     addNotification({
       type: 'info',
-      title: 'Urządzenie wybrane',
-      message: `MAC: ${device.mac}`,
+      title: t('device.deviceSelected'),
+      message: `${device.name || 'Mi Scale'} (${device.mac})`,
       duration: 3000,
     });
   };
@@ -400,13 +446,18 @@ export const DeviceSettings: React.FC = () => {
             <div>
               <p className="font-medium text-gray-900 dark:text-white">
                 {isConnected
-                  ? 'Połączono'
+                  ? t('device.connected')
                   : isDeviceConfigured
-                    ? 'Skonfigurowano'
-                    : 'Nie skonfigurowano'}
+                    ? t('ble:status.configured')
+                    : t('ble:status.notConfigured')}
+                {deviceName && isDeviceConfigured && (
+                  <span className="ml-2 text-sm font-normal text-gray-600 dark:text-gray-400">
+                    ({deviceName})
+                  </span>
+                )}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {deviceMac || 'Brak adresu MAC'}
+                {deviceMac || t('device.noMacAddress')}
               </p>
             </div>
           </div>
@@ -416,14 +467,14 @@ export const DeviceSettings: React.FC = () => {
               size="sm"
               onClick={handleClear}
             >
-              Wyczyść
+              {t('common:buttons.clear')}
             </Button>
           )}
         </div>
       </Card>
 
       {/* Auto-scan for devices */}
-      <Card title="Wykryj wagę" subtitle="Automatycznie znajdź urządzenia Mi Scale w pobliżu">
+      <Card title={t('device.detectScale')} subtitle={t('device.detectScaleDesc')}>
         <div className="space-y-4">
           {/* Scan button */}
           <div className="flex items-center gap-3">
@@ -433,7 +484,7 @@ export const DeviceSettings: React.FC = () => {
                   <circle cx="12" cy="12" r="10" opacity="0.25" />
                   <path d="M12 2a10 10 0 0 1 10 10" />
                 </svg>
-                Zatrzymaj skanowanie
+                {t('ble:device.stopScanning')}
               </Button>
             ) : (
               <Button variant="primary" onClick={handleScanForDevices} className="flex items-center gap-2">
@@ -441,12 +492,12 @@ export const DeviceSettings: React.FC = () => {
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 6v6l4 2" />
                 </svg>
-                Szukaj urządzeń
+                {t('device.searchDevices')}
               </Button>
             )}
             {isScanning && (
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                Szukam urządzeń Mi Scale...
+                {t('ble:device.searchingDevices')}
               </span>
             )}
           </div>
@@ -455,7 +506,7 @@ export const DeviceSettings: React.FC = () => {
           {discoveredDevices.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Znalezione urządzenia ({discoveredDevices.length})
+                {t('ble:device.foundDevices', { count: discoveredDevices.length })}
               </p>
               <div className="space-y-2">
                 {discoveredDevices.map((device) => (
@@ -473,40 +524,40 @@ export const DeviceSettings: React.FC = () => {
           {/* No devices found message */}
           {!isScanning && discoveredDevices.length === 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              Kliknij "Szukaj urządzeń" aby znaleźć wagę w pobliżu
+              {t('device.searchHint')}
             </p>
           )}
         </div>
       </Card>
 
       {/* Xiaomi Cloud Login - automatic key extraction */}
-      <Card title="Automatyczne pobranie klucza" subtitle="Zaloguj się do Xiaomi Cloud i automatycznie pobierz klucz BLE">
+      <Card title={t('device.autoKeyExtract')} subtitle={t('device.autoKeyExtractDesc')}>
         <XiaomiCloudLogin />
       </Card>
 
       {/* Device configuration */}
-      <Card title="Reczna konfiguracja" subtitle="Lub podaj klucz BLE recznie">
+      <Card title={t('device.manualConfig')} subtitle={t('device.manualConfigDesc')}>
         <div className="space-y-4">
           <SettingsInput
-            label="Adres MAC"
+            label={t('device.macAddress')}
             value={localMac}
             onChange={handleMacChange}
-            placeholder="AA:BB:CC:DD:EE:FF"
-            helperText="Adres Bluetooth wagi (format: XX:XX:XX:XX:XX:XX) - możesz też wybrać z listy powyżej"
+            placeholder={t('device.macAddressPlaceholder')}
+            helperText={t('device.macAddressHelper')}
           />
           <SettingsInput
-            label="Klucz BLE"
+            label={t('device.bleKey')}
             value={localKey}
             onChange={setLocalKey}
-            placeholder="32 znaki szesnastkowe"
-            helperText="Klucz szyfrowania BLE (32 znaki hex) - pobierany automatycznie lub ręcznie"
+            placeholder={t('device.bleKeyPlaceholder')}
+            helperText={t('device.bleKeyHelper')}
             type="password"
           />
 
           {hasChanges && (
             <div className="flex justify-end pt-4">
               <Button variant="primary" onClick={handleSave}>
-                Zapisz konfiguracje
+                {t('common:buttons.saveConfig')}
               </Button>
             </div>
           )}
@@ -514,57 +565,55 @@ export const DeviceSettings: React.FC = () => {
       </Card>
 
       {/* Connection preferences */}
-      <Card title="Preferencje połączenia">
+      <Card title={t('device.connectionPreferences')}>
         <div className="space-y-6">
           <SettingsToggle
-            label="Automatyczne łączenie"
-            description="Automatycznie połącz z wagą przy uruchomieniu aplikacji"
+            label={t('device.autoConnect')}
+            description={t('device.autoConnectDesc')}
             checked={autoConnect}
             onChange={setAutoConnect}
           />
 
           <SettingsNumber
-            label="Limit czasu skanowania"
+            label={t('device.scanTimeout')}
             value={scanTimeout / 1000}
             onChange={(value) => setScanTimeout(value * 1000)}
             min={5}
             max={60}
-            unit="sekund"
-            helperText="Maksymalny czas szukania wagi"
+            unit={t('common:units.seconds')}
+            helperText={t('device.scanTimeoutHelper')}
           />
         </div>
       </Card>
 
       {/* Help section */}
-      <Card title="Pomoc">
+      <Card title={t('device.help')}>
         <div className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
             <p className="font-medium text-green-800 dark:text-green-200 mb-2">
-              ✨ Zalecana metoda: Automatyczne pobranie klucza
+              {t('help.recommendedMethod')}
             </p>
             <p className="text-green-700 dark:text-green-300">
-              Użyj sekcji "Automatyczne pobranie klucza" powyżej. Wystarczy zalogować się
-              przez QR kod i wybrać wagę z listy - klucz zostanie pobrany automatycznie.
+              {t('help.recommendedMethodDesc')}
             </p>
           </div>
 
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="font-medium text-blue-800 dark:text-blue-200 mb-2">
-              ℹ️ Adres MAC vs Klucz BLE
+              {t('help.macVsBleKey')}
             </p>
             <p className="text-blue-700 dark:text-blue-300">
-              <strong>Adres MAC</strong> można wykryć automatycznie (przycisk "Szukaj urządzeń").<br/>
-              <strong>Klucz BLE</strong> wymaga pobrania z chmury Xiaomi (automatycznie lub ręcznie).
+              {t('help.macVsBleKeyDesc')}
             </p>
           </div>
 
           <p>
-            <strong>Alternatywnie: Ręczne pobranie klucza</strong>
+            <strong>{t('help.alternativeMethod')}</strong>
           </p>
           <ol className="list-decimal list-inside space-y-2">
-            <li>Zainstaluj aplikację Mi Home/Xiaomi Home na telefonie</li>
-            <li>Sparuj wagę z aplikacją (wykonaj jeden pomiar)</li>
-            <li>Użyj jednego z zewnętrznych narzędzi:</li>
+            <li>{t('help.step1')}</li>
+            <li>{t('help.step2')}</li>
+            <li>{t('help.step3')}</li>
           </ol>
 
           <div className="mt-3 space-y-2">
@@ -594,8 +643,7 @@ export const DeviceSettings: React.FC = () => {
 
           <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <p className="text-yellow-800 dark:text-yellow-200 text-xs">
-              ⚠️ <strong>Ważne:</strong> Aby pobrać klucz, musisz mieć wagę sparowaną z aplikacją Mi Home
-              i zalogować się do swojego konta Xiaomi.
+              <strong>{t('help.important')}</strong> {t('help.importantNote')}
             </p>
           </div>
         </div>

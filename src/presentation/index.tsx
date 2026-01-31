@@ -10,7 +10,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
+import { BLEProvider } from './contexts/BLEContext';
 import './styles/globals.css';
+
+// Initialize i18n before any component renders
+import '../i18n/config';
 
 /**
  * Get the root element from the DOM
@@ -30,7 +34,9 @@ const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    <App />
+    <BLEProvider>
+      <App />
+    </BLEProvider>
   </React.StrictMode>
 );
 

@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../common/Button';
 
 /**
@@ -110,6 +111,8 @@ export const ProfileSelectionDialog: React.FC<ProfileSelectionDialogProps> = ({
   onSaveAsGuest,
   onCancel,
 }) => {
+  const { t } = useTranslation('common');
+
   // Don't render if not open
   if (!isOpen) {
     return null;
@@ -162,7 +165,7 @@ export const ProfileSelectionDialog: React.FC<ProfileSelectionDialogProps> = ({
           <button
             onClick={onCancel}
             className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Zamknij"
+            aria-label={t('buttons.close')}
           >
             <CloseIcon className="w-5 h-5" />
           </button>

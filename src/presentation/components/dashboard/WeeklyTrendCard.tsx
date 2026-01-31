@@ -8,6 +8,7 @@
  */
 
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { useMeasurementStore, type Measurement } from '../../stores/measurementStore';
 import { useAppStore } from '../../stores/appStore';
@@ -109,6 +110,7 @@ const TrendIndicator: React.FC<{
  * WeeklyTrendCard component
  */
 export const WeeklyTrendCard: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { measurements } = useMeasurementStore();
   const { setActiveTab } = useAppStore();
 
@@ -161,7 +163,7 @@ export const WeeklyTrendCard: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Trend tygodniowy
+              {t('weeklyTrend.title')}
             </h3>
             <svg
               className="w-4 h-4 text-gray-400"
@@ -181,10 +183,10 @@ export const WeeklyTrendCard: React.FC = () => {
               </svg>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-              Brak danych z ostatniego tygodnia
+              {t('weeklyTrend.noData')}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Wykonaj pomiar, aby zobaczyc trend
+              {t('weeklyTrend.measureToSee')}
             </p>
           </div>
         </button>
@@ -201,7 +203,7 @@ export const WeeklyTrendCard: React.FC = () => {
       >
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Trend tygodniowy
+            {t('weeklyTrend.title')}
           </h3>
           <svg
             className="w-4 h-4 text-gray-400"
@@ -226,7 +228,7 @@ export const WeeklyTrendCard: React.FC = () => {
               <TrendIndicator change={weeklyData.change} unit="kg" />
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              {weeklyData.count} {weeklyData.count === 1 ? 'pomiar' : weeklyData.count < 5 ? 'pomiary' : 'pomiarow'} w tym tygodniu
+              {t('weeklyTrend.measurementsThisWeek', { count: weeklyData.count })}
             </p>
           </div>
 

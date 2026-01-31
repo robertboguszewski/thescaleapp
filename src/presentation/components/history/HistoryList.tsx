@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Skeleton } from '../common/LoadingSpinner';
@@ -23,6 +24,7 @@ import { useAppStore } from '../../stores/appStore';
  */
 const EmptyState: React.FC = () => {
   const { setActiveTab } = useAppStore();
+  const { t } = useTranslation('history');
 
   return (
     <div className="flex flex-col items-center justify-center py-16">
@@ -41,10 +43,10 @@ const EmptyState: React.FC = () => {
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        Brak pomiarow
+        {t('empty.title')}
       </h2>
       <p className="mt-2 text-gray-500 dark:text-gray-400 text-center max-w-md">
-        Nie masz jeszcze zadnych zapisanych pomiarow. Wykonaj pierwszy pomiar, aby rozpoczac sledzenie wynikow.
+        {t('empty.description')}
       </p>
       <Button
         variant="primary"
@@ -52,7 +54,7 @@ const EmptyState: React.FC = () => {
         className="mt-6"
         onClick={() => setActiveTab('measure')}
       >
-        Wykonaj pomiar
+        {t('empty.action')}
       </Button>
     </div>
   );
@@ -85,6 +87,8 @@ const DeleteConfirmModal: React.FC<{
   onConfirm: () => void;
   onCancel: () => void;
 }> = ({ isOpen, onConfirm, onCancel }) => {
+  const { t } = useTranslation('history');
+
   if (!isOpen) return null;
 
   return (
@@ -110,10 +114,10 @@ const DeleteConfirmModal: React.FC<{
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Usunąć pomiar?
+            {t('delete.confirm')}
           </h3>
           <p className="mt-2 text-gray-500 dark:text-gray-400">
-            Ta operacja jest nieodwracalna. Pomiar zostanie trwale usunięty z historii.
+            {t('delete.warning')}
           </p>
         </div>
 
@@ -123,14 +127,14 @@ const DeleteConfirmModal: React.FC<{
             fullWidth
             onClick={onCancel}
           >
-            Anuluj
+            {t('delete.cancel')}
           </Button>
           <Button
             variant="danger"
             fullWidth
             onClick={onConfirm}
           >
-            Usuń
+            {t('delete.delete')}
           </Button>
         </div>
       </div>
@@ -147,12 +151,14 @@ const Pagination: React.FC<{
   total: number;
   onPageChange: (page: number) => void;
 }> = ({ currentPage, totalPages, total, onPageChange }) => {
+  const { t } = useTranslation('history');
+
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Strona {currentPage} z {totalPages} ({total} pomiarow)
+        {t('pagination', { current: currentPage, total: totalPages, count: total })}
       </p>
       <div className="flex gap-2">
         <Button
@@ -210,6 +216,7 @@ const Pagination: React.FC<{
  * HistoryList component
  */
 export const HistoryList: React.FC = () => {
+  const { t } = useTranslation('history');
   const { data, page, totalPages, total } = usePaginatedMeasurements();
   const {
     selectedMeasurementId,
@@ -234,7 +241,7 @@ export const HistoryList: React.FC = () => {
       setDeleteModalId(null);
       addNotification({
         type: 'success',
-        title: 'Pomiar usunięty',
+        title: t('delete.success'),
         duration: 3000,
       });
     }
@@ -258,10 +265,10 @@ export const HistoryList: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Historia pomiarów
+            {t('title')}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Łącznie: {total} pomiarów
+            {t('totalMeasurements', { count: total })}
           </p>
         </div>
       </div>

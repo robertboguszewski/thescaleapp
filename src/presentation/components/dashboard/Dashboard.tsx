@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Skeleton } from '../common/LoadingSpinner';
@@ -88,6 +89,7 @@ const getMetricStatus = (metric: string, value: number, gender?: 'male' | 'femal
  * Key metrics section for dashboard with measurements
  */
 const KeyMetricsSection: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const latestMeasurement = useLatestMeasurement();
   const { measurements } = useMeasurementStore();
   const currentProfile = useCurrentProfile();
@@ -112,7 +114,7 @@ const KeyMetricsSection: React.FC = () => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <MetricCard
-        label="Waga"
+        label={t('metrics.weight')}
         value={raw.weightKg.toFixed(1)}
         unit="kg"
         icon={MetricIcons.weight}
@@ -121,7 +123,7 @@ const KeyMetricsSection: React.FC = () => {
         trendValue={calculateTrend(raw.weightKg, previousMeasurement?.raw.weightKg)?.value}
       />
       <MetricCard
-        label="BMI"
+        label={t('metrics.bmi')}
         value={metrics.bmi.toFixed(1)}
         icon={MetricIcons.bmi}
         status={getMetricStatus('bmi', metrics.bmi)}
@@ -129,7 +131,7 @@ const KeyMetricsSection: React.FC = () => {
         trendValue={calculateTrend(metrics.bmi, prevMetrics?.bmi)?.value}
       />
       <MetricCard
-        label="Tkanka tluszczowa"
+        label={t('metrics.bodyFat')}
         value={metrics.bodyFatPercent.toFixed(1)}
         unit="%"
         icon={MetricIcons.bodyFat}
@@ -138,7 +140,7 @@ const KeyMetricsSection: React.FC = () => {
         trendValue={calculateTrend(metrics.bodyFatPercent, prevMetrics?.bodyFatPercent)?.value}
       />
       <MetricCard
-        label="Tluszcz trzewny"
+        label={t('metrics.visceralFat')}
         value={metrics.visceralFatLevel}
         icon={MetricIcons.visceral}
         status={getMetricStatus('visceralFatLevel', metrics.visceralFatLevel)}
@@ -151,6 +153,7 @@ const KeyMetricsSection: React.FC = () => {
  * Dashboard component - Main hub for the application
  */
 export const Dashboard: React.FC = () => {
+  const { t, i18n } = useTranslation('dashboard');
   const latestMeasurement = useLatestMeasurement();
   const { isLoading } = useMeasurementStore();
   const { setActiveTab } = useAppStore();
@@ -167,7 +170,7 @@ export const Dashboard: React.FC = () => {
         <SetupStatus />
         {latestMeasurement && (
           <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Masz zapisane pomiary, ale dokończ konfigurację aby korzystać z pełnych funkcji.
+            {t('setupIncomplete')}
           </div>
         )}
       </div>
@@ -181,10 +184,10 @@ export const Dashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Pulpit
+            {t('title')}
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {new Date().toLocaleDateString('pl-PL', {
+            {new Date().toLocaleDateString(i18n.language === 'pl' ? 'pl-PL' : 'en-US', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
@@ -193,7 +196,7 @@ export const Dashboard: React.FC = () => {
           </p>
         </div>
         <Button variant="primary" onClick={() => setActiveTab('measure')}>
-          Nowy pomiar
+          {t('quickActions.newMeasurement')}
         </Button>
       </div>
 

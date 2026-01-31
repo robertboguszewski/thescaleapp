@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMeasurementStore, MetricType, DateRange } from '../../stores/measurementStore';
 
 /**
@@ -20,28 +21,42 @@ interface MetricConfig {
 }
 
 /**
- * Available metrics configuration
+ * Get metrics configuration with translations
  */
-export const METRIC_CONFIGS: MetricConfig[] = [
-  { id: 'weight', label: 'Waga', unit: 'kg', color: '#3b82f6' },
+const getMetricsConfig = (t: ReturnType<typeof useTranslation>['t']): MetricConfig[] => [
+  { id: 'weight', label: t('metrics.weight'), unit: 'kg', color: '#3b82f6' },
   { id: 'bmi', label: 'BMI', unit: '', color: '#8b5cf6' },
-  { id: 'bodyFatPercent', label: 'Tkanka tluszczowa', unit: '%', color: '#f59e0b' },
-  { id: 'muscleMassKg', label: 'Masa miesniowa', unit: 'kg', color: '#10b981' },
-  { id: 'bodyWaterPercent', label: 'Woda', unit: '%', color: '#06b6d4' },
-  { id: 'visceralFatLevel', label: 'Tluszcz trzewny', unit: '', color: '#ef4444' },
+  { id: 'bodyFatPercent', label: t('metrics.bodyFat'), unit: '%', color: '#f59e0b' },
+  { id: 'muscleMassKg', label: t('metrics.muscleMass'), unit: 'kg', color: '#10b981' },
+  { id: 'bodyWaterPercent', label: t('metrics.water'), unit: '%', color: '#06b6d4' },
+  { id: 'visceralFatLevel', label: t('metrics.visceralFat'), unit: '', color: '#ef4444' },
   { id: 'bmrKcal', label: 'BMR', unit: 'kcal', color: '#f97316' },
-  { id: 'bodyScore', label: 'Wynik ogolny', unit: '', color: '#6366f1' },
+  { id: 'bodyScore', label: t('metrics.bodyScore'), unit: '', color: '#6366f1' },
 ];
 
 /**
- * Date range options
+ * Default metric configs (will be replaced with translated version in component)
+ */
+export const METRIC_CONFIGS: MetricConfig[] = [
+  { id: 'weight', label: 'Weight', unit: 'kg', color: '#3b82f6' },
+  { id: 'bmi', label: 'BMI', unit: '', color: '#8b5cf6' },
+  { id: 'bodyFatPercent', label: 'Body fat', unit: '%', color: '#f59e0b' },
+  { id: 'muscleMassKg', label: 'Muscle mass', unit: 'kg', color: '#10b981' },
+  { id: 'bodyWaterPercent', label: 'Water', unit: '%', color: '#06b6d4' },
+  { id: 'visceralFatLevel', label: 'Visceral fat', unit: '', color: '#ef4444' },
+  { id: 'bmrKcal', label: 'BMR', unit: 'kcal', color: '#f97316' },
+  { id: 'bodyScore', label: 'Body score', unit: '', color: '#6366f1' },
+];
+
+/**
+ * Date range options (English defaults - use DateRangeSelector component for translated version)
  */
 export const DATE_RANGE_OPTIONS: { id: DateRange; label: string }[] = [
-  { id: '7d', label: '7 dni' },
-  { id: '30d', label: '30 dni' },
-  { id: '90d', label: '3 miesiące' },
-  { id: '1y', label: 'Rok' },
-  { id: 'all', label: 'Wszystko' },
+  { id: '7d', label: '7 days' },
+  { id: '30d', label: '30 days' },
+  { id: '90d', label: '3 months' },
+  { id: '1y', label: 'Year' },
+  { id: 'all', label: 'All' },
 ];
 
 /**
@@ -61,11 +76,13 @@ export interface MetricSelectorProps {
  * Tab-style metric selector
  */
 const TabsSelector: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { selectedMetric, setSelectedMetric } = useMeasurementStore();
+  const metricsConfig = getMetricsConfig(t);
 
   return (
     <div className="flex flex-wrap gap-2">
-      {METRIC_CONFIGS.map((metric) => (
+      {metricsConfig.map((metric) => (
         <button
           key={metric.id}
           onClick={() => setSelectedMetric(metric.id)}
@@ -89,9 +106,11 @@ const TabsSelector: React.FC = () => {
  * Dropdown-style metric selector
  */
 const DropdownSelector: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { selectedMetric, setSelectedMetric } = useMeasurementStore();
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const metricsConfig = getMetricsConfig(t);
 
   const currentMetric = getMetricConfig(selectedMetric);
 
@@ -138,7 +157,7 @@ const DropdownSelector: React.FC = () => {
 
       {isOpen && (
         <div className="absolute z-10 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1">
-          {METRIC_CONFIGS.map((metric) => (
+          {metricsConfig.map((metric) => (
             <button
               key={metric.id}
               onClick={() => {
@@ -173,11 +192,13 @@ const DropdownSelector: React.FC = () => {
  * Pills-style metric selector
  */
 const PillsSelector: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const { selectedMetric, setSelectedMetric } = useMeasurementStore();
+  const metricsConfig = getMetricsConfig(t);
 
   return (
     <div className="flex flex-wrap gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-      {METRIC_CONFIGS.map((metric) => (
+      {metricsConfig.map((metric) => (
         <button
           key={metric.id}
           onClick={() => setSelectedMetric(metric.id)}
@@ -216,11 +237,19 @@ export const MetricSelector: React.FC<MetricSelectorProps> = ({
  * Date range selector component
  */
 export const DateRangeSelector: React.FC<{ className?: string }> = ({ className = '' }) => {
+  const { t } = useTranslation('dashboard');
   const { dateRange, setDateRange } = useMeasurementStore();
+  const dateRangeOptions = [
+    { id: '7d' as DateRange, label: t('dateRange.days7') },
+    { id: '30d' as DateRange, label: t('dateRange.days30') },
+    { id: '90d' as DateRange, label: t('dateRange.months3') },
+    { id: '1y' as DateRange, label: t('dateRange.year') },
+    { id: 'all' as DateRange, label: t('dateRange.all') },
+  ];
 
   return (
     <div className={`flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}>
-      {DATE_RANGE_OPTIONS.map((option) => (
+      {dateRangeOptions.map((option) => (
         <button
           key={option.id}
           onClick={() => setDateRange(option.id)}

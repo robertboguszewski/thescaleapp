@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { InlineError } from '../common/ErrorMessage';
@@ -72,21 +73,21 @@ const generateBirthYearOptions = (): Array<{ value: string; label: string }> => 
 };
 
 /**
- * Month names in Polish (1-12)
+ * Generate month options with translations
  */
-const MONTH_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: '1', label: 'Styczeń' },
-  { value: '2', label: 'Luty' },
-  { value: '3', label: 'Marzec' },
-  { value: '4', label: 'Kwiecień' },
-  { value: '5', label: 'Maj' },
-  { value: '6', label: 'Czerwiec' },
-  { value: '7', label: 'Lipiec' },
-  { value: '8', label: 'Sierpień' },
-  { value: '9', label: 'Wrzesień' },
-  { value: '10', label: 'Październik' },
-  { value: '11', label: 'Listopad' },
-  { value: '12', label: 'Grudzień' },
+const getMonthOptions = (t: (key: string) => string): Array<{ value: string; label: string }> => [
+  { value: '1', label: t('common:months.1') },
+  { value: '2', label: t('common:months.2') },
+  { value: '3', label: t('common:months.3') },
+  { value: '4', label: t('common:months.4') },
+  { value: '5', label: t('common:months.5') },
+  { value: '6', label: t('common:months.6') },
+  { value: '7', label: t('common:months.7') },
+  { value: '8', label: t('common:months.8') },
+  { value: '9', label: t('common:months.9') },
+  { value: '10', label: t('common:months.10') },
+  { value: '11', label: t('common:months.11') },
+  { value: '12', label: t('common:months.12') },
 ];
 
 /**
@@ -268,8 +269,10 @@ const BirthDateSelector: React.FC<{
   onYearChange: (year: number) => void;
   onMonthChange: (month: number | undefined) => void;
   yearError?: string;
-}> = ({ birthYear, birthMonth, onYearChange, onMonthChange, yearError }) => {
+  t: (key: string, options?: Record<string, unknown>) => string;
+}> = ({ birthYear, birthMonth, onYearChange, onMonthChange, yearError, t }) => {
   const birthYearOptions = React.useMemo(() => generateBirthYearOptions(), []);
+  const monthOptions = React.useMemo(() => getMonthOptions(t), [t]);
   const calculatedAge = calculateAgeWithMonth(birthYear, birthMonth);
 
   const handleMonthChange = (value: string) => {
@@ -284,7 +287,7 @@ const BirthDateSelector: React.FC<{
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <FormSelect
-          label="Rok urodzenia"
+          label={t('settings:profileEditor.birthYear')}
           name="birthYear"
           value={birthYear.toString()}
           onChange={(value) => onYearChange(parseInt(value) || new Date().getFullYear() - 30)}
@@ -293,18 +296,18 @@ const BirthDateSelector: React.FC<{
           required
         />
         <FormSelect
-          label="Miesiąc (opcjonalnie)"
+          label={t('settings:profileEditor.birthMonth')}
           name="birthMonth"
           value={birthMonth?.toString() || ''}
           onChange={handleMonthChange}
-          options={MONTH_OPTIONS}
-          helperText="Dla dokladniejszego wieku"
+          options={monthOptions}
+          helperText={t('settings:profileEditor.birthMonthHelper')}
         />
       </div>
       <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-        Wiek: {calculatedAge} lat
+        {t('settings:profileEditor.ageDisplay', { age: calculatedAge })}
         {birthMonth === undefined && (
-          <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">(+/-1 rok)</span>
+          <span className="text-gray-400 dark:text-gray-500 font-normal ml-1">{t('settings:profileEditor.ageApprox')}</span>
         )}
       </p>
     </div>
@@ -319,6 +322,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
   onComplete,
   onCancel,
 }) => {
+  const { t } = useTranslation(['settings', 'common']);
   const editingProfile = useEditingProfile();
   const {
     addProfile,
@@ -461,7 +465,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           updateProfile(editingProfile.id, storedProfile);
           addNotification({
             type: 'success',
-            title: 'Profil zaktualizowany',
+            title: t('profileEditor.updated'),
             duration: 3000,
           });
         } else {
@@ -494,7 +498,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           addProfile(storedProfile);
           addNotification({
             type: 'success',
-            title: 'Profil utworzony',
+            title: t('profileEditor.created'),
             duration: 3000,
           });
         } else {
@@ -509,8 +513,8 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
       console.error('Error saving profile:', error);
       addNotification({
         type: 'error',
-        title: 'Błąd zapisu',
-        message: error instanceof Error ? error.message : 'Nie udalo sie zapisac profilu',
+        title: t('profileEditor.saveError'),
+        message: error instanceof Error ? error.message : t('profileEditor.saveErrorMessage'),
         duration: 5000,
       });
     } finally {
@@ -526,28 +530,28 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
   };
 
   return (
-    <Card title={editingProfile ? 'Edytuj profil' : 'Nowy profil'}>
+    <Card title={editingProfile ? t('profileEditor.editProfile') : t('profileEditor.newProfile')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
         <FormInput
-          label="Nazwa profilu"
+          label={t('profileEditor.profileName')}
           name="name"
           value={formData.name}
           onChange={(value) => handleChange('name', value)}
           error={validationErrors.name}
-          placeholder="np. Jan Kowalski"
+          placeholder={t('profileEditor.profileNamePlaceholder')}
           required
         />
 
         {/* Gender */}
         <FormSelect
-          label="Płeć"
+          label={t('profileEditor.gender')}
           name="gender"
           value={formData.gender}
           onChange={(value) => handleChange('gender', value)}
           options={[
-            { value: 'male', label: 'Mężczyzna' },
-            { value: 'female', label: 'Kobieta' },
+            { value: 'male', label: t('common:gender.male') },
+            { value: 'female', label: t('common:gender.female') },
           ]}
           error={validationErrors.gender}
           required
@@ -560,12 +564,13 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           onYearChange={handleBirthYearChange}
           onMonthChange={handleBirthMonthChange}
           yearError={validationErrors.age}
+          t={t}
         />
 
         {/* Height and Ethnicity row */}
         <div className="grid grid-cols-2 gap-4">
           <FormInput
-            label="Wzrost (cm)"
+            label={t('profileEditor.height')}
             name="heightCm"
             type="number"
             value={formData.heightCm}
@@ -574,27 +579,27 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             min={90}
             max={220}
             required
-            helperText="90-220 cm"
+            helperText={t('profileEditor.heightHelper')}
           />
           <FormSelect
-            label="Pochodzenie etniczne"
+            label={t('profileEditor.ethnicity')}
             name="ethnicity"
             value={formData.ethnicity || ''}
             onChange={handleEthnicityChange}
             options={[
-              { value: 'asian', label: 'Azjatyckie' },
-              { value: 'non-asian', label: 'Inne' },
+              { value: 'asian', label: t('common:ethnicity.asian') },
+              { value: 'non-asian', label: t('common:ethnicity.nonAsian') },
             ]}
           />
         </div>
 
         {/* Default checkbox */}
         <FormCheckbox
-          label="Profil domyslny"
+          label={t('profileEditor.defaultProfile')}
           name="isDefault"
           checked={formData.isDefault}
           onChange={(checked) => handleChange('isDefault', checked)}
-          helperText="Ten profil bedzie automatycznie wybierany przy uruchomieniu aplikacji"
+          helperText={t('profileEditor.defaultProfileHelper')}
         />
 
         {/* Actions */}
@@ -605,14 +610,14 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             onClick={handleCancel}
             disabled={isSaving}
           >
-            Anuluj
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             loading={isSaving}
           >
-            {editingProfile ? 'Zapisz zmiany' : 'Utworz profil'}
+            {editingProfile ? t('common:buttons.saveChanges') : t('profileEditor.newProfile')}
           </Button>
         </div>
       </form>

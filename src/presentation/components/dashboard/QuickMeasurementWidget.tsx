@@ -8,6 +8,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { useBLEStore, useIsConnected, useIsDeviceConfigured } from '../../stores/bleStore';
@@ -49,14 +50,15 @@ const BluetoothIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5"
 const LiveWeightDisplay: React.FC<{
   weight: number;
   isStable: boolean;
-}> = ({ weight, isStable }) => (
+  t: (key: string) => string;
+}> = ({ weight, isStable, t }) => (
   <div className="text-center py-4">
     <div className={`text-4xl font-bold ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
       {weight > 0 ? weight.toFixed(1) : '---'}
       <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-1">kg</span>
     </div>
     <p className={`text-sm mt-2 ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-      {isStable ? 'Pomiar ustabilizowany' : 'Stabilizacja...'}
+      {isStable ? t('quick.stabilized') : t('quick.stabilizing')}
     </p>
   </div>
 );
@@ -72,7 +74,8 @@ const ResultPreview: React.FC<{
   onViewDetails: () => void;
   isSaving: boolean;
   isSaved: boolean;
-}> = ({ weight, bmi, onSave, onDiscard, onViewDetails, isSaving, isSaved }) => (
+  t: (key: string) => string;
+}> = ({ weight, bmi, onSave, onDiscard, onViewDetails, isSaving, isSaved, t }) => (
   <div className="text-center py-2">
     <div className="text-3xl font-bold text-green-600 dark:text-green-400">
       {weight.toFixed(1)}
@@ -91,7 +94,7 @@ const ResultPreview: React.FC<{
           onClick={onDiscard}
           disabled={isSaving}
         >
-          Odrzuc
+          {t('result.discard')}
         </Button>
         <Button
           variant="primary"
@@ -99,14 +102,14 @@ const ResultPreview: React.FC<{
           onClick={onSave}
           disabled={isSaving}
         >
-          {isSaving ? 'Zapisywanie...' : 'Zapisz'}
+          {isSaving ? t('result.saving') : t('result.save')}
         </Button>
       </div>
     ) : (
       <div className="mt-4">
-        <p className="text-sm text-green-600 dark:text-green-400 mb-2">Zapisano</p>
+        <p className="text-sm text-green-600 dark:text-green-400 mb-2">{t('quick.saved')}</p>
         <Button variant="outline" size="sm" onClick={onViewDetails}>
-          Zobacz szczegoly
+          {t('result.viewDetails')}
         </Button>
       </div>
     )}
@@ -117,6 +120,7 @@ const ResultPreview: React.FC<{
  * QuickMeasurementWidget component
  */
 export const QuickMeasurementWidget: React.FC = () => {
+  const { t } = useTranslation('measurement');
   const [widgetState, setWidgetState] = useState<WidgetState>('disconnected');
   const [measurementResult, setMeasurementResult] = useState<{
     weight: number;
@@ -234,12 +238,12 @@ export const QuickMeasurementWidget: React.FC = () => {
 
       addNotification({
         type: 'success',
-        title: 'Pomiar zapisany',
+        title: t('quick.saved_notification.title'),
         message: `${measurementResult.weight.toFixed(1)} kg`,
         duration: 3000,
       });
     }, 300);
-  }, [measurementResult, currentProfile, addMeasurement, setCurrentMeasurement, setSaving, addNotification]);
+  }, [measurementResult, currentProfile, addMeasurement, setCurrentMeasurement, setSaving, addNotification, t]);
 
   // Handle discard
   const handleDiscard = useCallback(() => {
@@ -277,14 +281,14 @@ export const QuickMeasurementWidget: React.FC = () => {
               <BluetoothIcon className="w-7 h-7 text-gray-400" />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-              {isDeviceConfigured ? 'Waga rozlaczona' : 'Polacz z waga'}
+              {isDeviceConfigured ? t('quick.disconnected') : t('quick.connect')}
             </p>
             <div className="flex justify-center gap-2">
               <Button variant="primary" size="sm" onClick={handleConnect}>
-                {isDeviceConfigured ? 'Polacz' : 'Konfiguruj'}
+                {isDeviceConfigured ? t('common:buttons.connect') : t('common:buttons.configure')}
               </Button>
               <Button variant="outline" size="sm" onClick={handleGoToMeasure}>
-                Wiecej
+                {t('common:buttons.more')}
               </Button>
             </div>
           </div>
@@ -297,7 +301,7 @@ export const QuickMeasurementWidget: React.FC = () => {
               <BluetoothIcon className="w-7 h-7 text-yellow-500" />
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Laczenie z waga...
+              {t('quick.connecting')}
             </p>
           </div>
         );
@@ -309,19 +313,19 @@ export const QuickMeasurementWidget: React.FC = () => {
               <ScaleIcon className="w-7 h-7 text-green-500" />
             </div>
             <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
-              Gotowe do pomiaru
+              {t('quick.ready')}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              Wejdz na wage
+              {t('panel.status.ready')}
             </p>
             <Button variant="outline" size="sm" onClick={handleGoToMeasure}>
-              Pelny widok
+              {t('common:buttons.more')}
             </Button>
           </div>
         );
 
       case 'measuring':
-        return <LiveWeightDisplay weight={liveWeight} isStable={isStable} />;
+        return <LiveWeightDisplay weight={liveWeight} isStable={isStable} t={t} />;
 
       case 'result':
         if (measurementResult) {
@@ -335,6 +339,7 @@ export const QuickMeasurementWidget: React.FC = () => {
                 onViewDetails={handleViewDetails}
                 isSaving={isSaving}
                 isSaved={currentMeasurement.isSaved}
+                t={t}
               />
               {currentMeasurement.isSaved && (
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -344,7 +349,7 @@ export const QuickMeasurementWidget: React.FC = () => {
                     className="w-full"
                     onClick={handleNewMeasurement}
                   >
-                    Nowy pomiar
+                    {t('quick.new')}
                   </Button>
                 </div>
               )}
@@ -362,12 +367,12 @@ export const QuickMeasurementWidget: React.FC = () => {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          Szybki pomiar
+          {t('quick.title')}
         </h3>
         {isConnected && (
           <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Polaczone
+            {t('common:status.connected')}
           </span>
         )}
       </div>

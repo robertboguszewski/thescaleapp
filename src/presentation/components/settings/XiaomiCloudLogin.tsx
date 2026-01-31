@@ -9,23 +9,15 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { useTranslation } from 'react-i18next';
 import { useXiaomiStore, useMiScaleDevices } from '../../stores/xiaomiStore';
 import { useBLEStore } from '../../stores/bleStore';
 import type { XiaomiRegion, XiaomiCloudDevice } from '../../../shared/types';
 
 /**
- * Region options for Xiaomi cloud
+ * Region values for Xiaomi cloud
  */
-const REGIONS: { value: XiaomiRegion; label: string }[] = [
-  { value: 'cn', label: 'Chiny' },
-  { value: 'de', label: 'Europa (DE)' },
-  { value: 'us', label: 'USA' },
-  { value: 'ru', label: 'Rosja' },
-  { value: 'tw', label: 'Tajwan' },
-  { value: 'sg', label: 'Singapur' },
-  { value: 'in', label: 'Indie' },
-  { value: 'i2', label: 'Inne' },
-];
+const REGION_VALUES: XiaomiRegion[] = ['cn', 'de', 'us', 'ru', 'tw', 'sg', 'in', 'i2'];
 
 /**
  * Device list item component
@@ -36,7 +28,8 @@ const DeviceListItem: React.FC<{
   onSelect: () => void;
   onExtractKey: () => void;
   isExtracting: boolean;
-}> = ({ device, isSelected, onSelect, onExtractKey, isExtracting }) => {
+  t: (key: string) => string;
+}> = ({ device, isSelected, onSelect, onExtractKey, isExtracting, t }) => {
   return (
     <div
       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -62,7 +55,7 @@ const DeviceListItem: React.FC<{
             disabled={isExtracting}
             className="px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white text-sm rounded transition-colors"
           >
-            {isExtracting ? 'Pobieranie...' : 'Pobierz klucz'}
+            {isExtracting ? t('xiaomiCloud.extracting') : t('xiaomiCloud.extractKey')}
           </button>
         )}
       </div>
@@ -74,6 +67,7 @@ const DeviceListItem: React.FC<{
  * Main Xiaomi Cloud Login component
  */
 export const XiaomiCloudLogin: React.FC = () => {
+  const { t } = useTranslation('settings');
   const {
     isAuthenticated,
     isLoading,
@@ -124,12 +118,12 @@ export const XiaomiCloudLogin: React.FC = () => {
         })
         .catch((err) => {
           console.error('[XiaomiCloudLogin] Failed to generate QR code:', err);
-          setError('Nie udało się wygenerować kodu QR');
+          setError(t('xiaomiCloud.qrGenerateError'));
         });
     } else {
       setQrCodeDataUrl(null);
     }
-  }, [qrSession?.qrCodeUrl, setError]);
+  }, [qrSession?.qrCodeUrl, setError, t]);
 
   /**
    * Start QR code login
@@ -142,18 +136,18 @@ export const XiaomiCloudLogin: React.FC = () => {
       const response = await window.electronAPI.startXiaomiQRLogin();
 
       if (!response.success || !response.data) {
-        throw new Error(response.error?.message || 'Nie udało się rozpocząć logowania');
+        throw new Error(response.error?.message || t('xiaomiCloud.loginStartError'));
       }
 
       setQRSession(response.data);
       setLoginStatus('pending');
       setIsPolling(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nieznany błąd');
+      setError(err instanceof Error ? err.message : t('common:errors.unknown'));
     } finally {
       setLoading(false);
     }
-  }, [setLoading, setError, setQRSession, setLoginStatus, setIsPolling]);
+  }, [setLoading, setError, setQRSession, setLoginStatus, setIsPolling, t]);
 
   /**
    * Poll for login status
@@ -165,7 +159,7 @@ export const XiaomiCloudLogin: React.FC = () => {
       const response = await window.electronAPI.pollXiaomiLogin(qrSession.sessionId);
 
       if (!response.success || !response.data) {
-        throw new Error(response.error?.message || 'Błąd sprawdzania statusu');
+        throw new Error(response.error?.message || t('xiaomiCloud.statusCheckError'));
       }
 
       const { status, authToken, error: pollError } = response.data;
@@ -183,7 +177,7 @@ export const XiaomiCloudLogin: React.FC = () => {
         );
 
         if (!completeResponse.success) {
-          throw new Error(completeResponse.error?.message || 'Nie udało się zakończyć logowania');
+          throw new Error(completeResponse.error?.message || t('xiaomiCloud.loginCompleteError'));
         }
 
         setAuthenticated(true);
@@ -193,19 +187,64 @@ export const XiaomiCloudLogin: React.FC = () => {
         const devicesResponse = await window.electronAPI.getXiaomiDevices();
         if (devicesResponse.success && devicesResponse.data) {
           setDevices(devicesResponse.data);
+
+          // Auto-extract key for Mi Scale devices
+          const miScales = devicesResponse.data.filter(
+            (d) =>
+              d.model?.toLowerCase().includes('scale') ||
+              d.model?.toLowerCase().includes('yunmai') ||
+              d.name?.toLowerCase().includes('scale') ||
+              d.name?.toLowerCase().includes('mi body')
+          );
+
+          if (miScales.length > 0) {
+            // Auto-select first Mi Scale and extract key
+            const firstMiScale = miScales[0];
+            setSelectedDevice(firstMiScale);
+
+            try {
+              const keyResponse = await window.electronAPI.getXiaomiBLEKey(firstMiScale.did);
+
+              if (keyResponse.success && keyResponse.data) {
+                setBLEKey(keyResponse.data);
+
+                // Format MAC address
+                const formatMac = (mac: string | undefined): string => {
+                  if (!mac) return '';
+                  const cleaned = mac.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+                  return cleaned.match(/.{1,2}/g)?.join(':') || cleaned;
+                };
+
+                const macAddress = keyResponse.data.mac || firstMiScale?.mac || '';
+                const formattedMac = formatMac(macAddress);
+
+                // Auto-configure BLE store with device name
+                if (formattedMac && keyResponse.data.beaconKey) {
+                  setDeviceConfig({
+                    deviceMac: formattedMac,
+                    bleKey: keyResponse.data.beaconKey,
+                    deviceName: firstMiScale.name || 'Mi Scale',
+                  });
+                }
+              }
+            } catch (keyErr) {
+              console.error('[XiaomiCloudLogin] Auto-extract key failed:', keyErr);
+              // Don't show error - user can retry manually
+            }
+          }
         }
 
         setLoading(false);
       } else if (status === 'expired') {
         setIsPolling(false);
-        setError('Sesja QR wygasła. Spróbuj ponownie.');
+        setError(t('xiaomiCloud.sessionExpired'));
       } else if (status === 'error') {
         setIsPolling(false);
-        setError(pollError || 'Błąd logowania');
+        setError(pollError || t('xiaomiCloud.loginError'));
       }
     } catch (err) {
       setIsPolling(false);
-      setError(err instanceof Error ? err.message : 'Nieznany błąd');
+      setError(err instanceof Error ? err.message : t('xiaomiCloud.unknownError'));
     }
   }, [
     qrSession,
@@ -217,6 +256,7 @@ export const XiaomiCloudLogin: React.FC = () => {
     setQRSession,
     setDevices,
     setError,
+    t,
   ]);
 
   /**
@@ -249,7 +289,7 @@ export const XiaomiCloudLogin: React.FC = () => {
       const response = await window.electronAPI.getXiaomiBLEKey(selectedDevice.did);
 
       if (!response.success || !response.data) {
-        throw new Error(response.error?.message || 'Nie udalo sie pobrac klucza BLE');
+        throw new Error(response.error?.message || t('xiaomiCloud.bleKeyFetchError'));
       }
 
       setBLEKey(response.data);
@@ -273,11 +313,11 @@ export const XiaomiCloudLogin: React.FC = () => {
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nieznany błąd');
+      setError(err instanceof Error ? err.message : t('common:errors.unknown'));
     } finally {
       setIsExtractingKey(false);
     }
-  }, [selectedDevice, setError, setBLEKey, setDeviceConfig]);
+  }, [selectedDevice, setError, setBLEKey, setDeviceConfig, t]);
 
   /**
    * Logout
@@ -298,26 +338,65 @@ export const XiaomiCloudLogin: React.FC = () => {
 
   // Render authenticated view
   if (isAuthenticated) {
+    // If key was successfully extracted, show simple success view
+    if (bleKey) {
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-white">Xiaomi Cloud</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-green-400">{t('xiaomiCloud.loggedIn')}</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-400 hover:text-white"
+              >
+                {t('xiaomiCloud.logout')}
+              </button>
+            </div>
+          </div>
+
+          {/* Success message - key extracted */}
+          <div className="p-4 bg-green-900/30 border border-green-600 rounded-lg">
+            <div className="flex items-center gap-3 mb-2">
+              <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <h4 className="text-lg font-medium text-green-400">
+                {t('xiaomiCloud.configurationComplete')}
+              </h4>
+            </div>
+            <p className="text-sm text-gray-300">
+              {t('xiaomiCloud.scaleConfiguredSuccessfully')}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              {t('xiaomiCloud.keyAutoConfigured')}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Show device list only if key extraction failed or no Mi Scale found
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-white">Xiaomi Cloud</h3>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-green-400">Zalogowano</span>
+            <span className="text-sm text-green-400">{t('xiaomiCloud.loggedIn')}</span>
             <button
               onClick={handleLogout}
               className="text-sm text-gray-400 hover:text-white"
             >
-              Wyloguj
+              {t('xiaomiCloud.logout')}
             </button>
           </div>
         </div>
 
-        {/* Device list */}
+        {/* Device list - shown only when manual selection is needed */}
         {miScaleDevices.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-gray-300">
-              Znalezione wagi Mi Scale ({miScaleDevices.length})
+              {t('xiaomiCloud.foundMiScales', { count: miScaleDevices.length })}
             </h4>
             {miScaleDevices.map((device) => (
               <DeviceListItem
@@ -327,40 +406,17 @@ export const XiaomiCloudLogin: React.FC = () => {
                 onSelect={() => setSelectedDevice(device)}
                 onExtractKey={handleExtractKey}
                 isExtracting={isExtractingKey}
+                t={t}
               />
             ))}
           </div>
         ) : devices.length > 0 ? (
           <div className="text-sm text-gray-400">
-            Nie znaleziono wagi Mi Scale. Znaleziono {devices.length} innych urzadzen.
+            {t('xiaomiCloud.noMiScaleOtherDevices', { count: devices.length })}
           </div>
         ) : (
           <div className="text-sm text-gray-400">
-            Brak urzadzen. Upewnij sie, ze waga jest dodana w aplikacji Mi Home.
-          </div>
-        )}
-
-        {/* Extracted key display */}
-        {bleKey && (
-          <div className="p-3 bg-green-900/30 border border-green-600 rounded-lg">
-            <h4 className="text-sm font-medium text-green-400 mb-2">
-              Klucz BLE zostal pobrany!
-            </h4>
-            <div className="space-y-1 text-sm">
-              <div>
-                <span className="text-gray-400">MAC: </span>
-                <span className="text-white font-mono">{bleKey.mac}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Klucz: </span>
-                <span className="text-white font-mono text-xs break-all">
-                  {bleKey.beaconKey}
-                </span>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Klucz został automatycznie skonfigurowany. Możesz teraz połączyć się z wagą.
-            </p>
+            {t('xiaomiCloud.noDevices')}
           </div>
         )}
 
@@ -378,7 +434,7 @@ export const XiaomiCloudLogin: React.FC = () => {
   if (qrSession) {
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-white">Zaloguj sie do Xiaomi Cloud</h3>
+        <h3 className="text-lg font-medium text-white">{t('xiaomiCloud.loginToCloud')}</h3>
 
         <div className="text-center space-y-4">
           {/* QR Code */}
@@ -416,31 +472,31 @@ export const XiaomiCloudLogin: React.FC = () => {
             {loginStatus === 'pending' && (
               <div className="space-y-2">
                 <span className="text-yellow-400 block">
-                  Zeskanuj kod QR lub użyj linku poniżej
+                  {t('xiaomiCloud.scanQrOrUseLink')}
                 </span>
                 <div className="text-left bg-gray-800 rounded-lg p-3 text-xs text-gray-300 space-y-2">
-                  <p className="font-medium text-white">⚠️ Ważne - jak prawidłowo zeskanować:</p>
+                  <p className="font-medium text-white">⚠️ {t('xiaomiCloud.important')}</p>
                   <div className="bg-blue-900/30 border border-blue-600 rounded p-2 mb-2">
-                    <p className="text-blue-300 font-medium">Opcja 1 (Zalecana): Użyj linku</p>
-                    <p className="text-gray-400">Kliknij link poniżej i zaloguj się w przeglądarce telefonu.</p>
+                    <p className="text-blue-300 font-medium">{t('xiaomiCloud.option1Recommended')}</p>
+                    <p className="text-gray-400">{t('xiaomiCloud.option1Desc')}</p>
                   </div>
                   <div className="bg-gray-700/50 rounded p-2">
-                    <p className="text-gray-300 font-medium">Opcja 2: Zeskanuj kod QR</p>
+                    <p className="text-gray-300 font-medium">{t('xiaomiCloud.option2')}</p>
                     <ol className="list-decimal list-inside space-y-1 text-gray-400">
-                      <li>Użyj <strong>aparatu telefonu</strong> lub dowolnej aplikacji do skanowania QR</li>
-                      <li>Zeskanuj kod QR powyżej</li>
-                      <li>Otworzy się strona logowania Xiaomi w przeglądarce</li>
-                      <li>Zaloguj się do swojego konta Xiaomi</li>
+                      <li>{t('xiaomiCloud.option2Step1')}</li>
+                      <li>{t('xiaomiCloud.option2Step2')}</li>
+                      <li>{t('xiaomiCloud.option2Step3')}</li>
+                      <li>{t('xiaomiCloud.option2Step4')}</li>
                     </ol>
                   </div>
                   <p className="text-red-400 mt-2 text-xs">
-                    ❌ NIE używaj skanera "Dodaj urządzenie" w Mi Home - ten skaner służy do parowania urządzeń, nie do logowania.
+                    ❌ {t('xiaomiCloud.scannerWarning')}
                   </p>
                 </div>
               </div>
             )}
             {loginStatus === 'scanned' && (
-              <span className="text-blue-400">Zeskanowano! Potwierdź logowanie na telefonie...</span>
+              <span className="text-blue-400">{t('xiaomiCloud.scanned')}</span>
             )}
           </div>
 
@@ -463,13 +519,13 @@ export const XiaomiCloudLogin: React.FC = () => {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              <span>Oczekiwanie na logowanie...</span>
+              <span>{t('xiaomiCloud.waitingForLogin')}</span>
             </div>
           )}
 
           {/* Login link - primary option */}
           <div className="bg-green-900/30 border border-green-600 rounded-lg p-3">
-            <p className="text-green-400 font-medium text-sm mb-2">🔗 Link do logowania:</p>
+            <p className="text-green-400 font-medium text-sm mb-2">🔗 {t('xiaomiCloud.loginLink')}</p>
             <div className="flex items-center gap-2 mb-2">
               <button
                 onClick={() => {
@@ -477,18 +533,18 @@ export const XiaomiCloudLogin: React.FC = () => {
                   // Show temporary feedback
                   const btn = document.getElementById('copy-url-btn');
                   if (btn) {
-                    btn.textContent = '✓ Skopiowano!';
+                    btn.textContent = `✓ ${t('xiaomiCloud.copied')}`;
                     setTimeout(() => {
-                      btn.textContent = '📋 Kopiuj URL';
+                      btn.textContent = `📋 ${t('xiaomiCloud.copyUrl')}`;
                     }, 2000);
                   }
                 }}
                 id="copy-url-btn"
                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors flex-shrink-0"
               >
-                📋 Kopiuj URL
+                📋 {t('xiaomiCloud.copyUrl')}
               </button>
-              <span className="text-gray-400 text-xs">← Skopiuj i wklej na telefonie</span>
+              <span className="text-gray-400 text-xs">{t('xiaomiCloud.copyAndPaste')}</span>
             </div>
             <a
               href={qrSession.loginUrl}
@@ -499,7 +555,7 @@ export const XiaomiCloudLogin: React.FC = () => {
               {qrSession.loginUrl}
             </a>
             <p className="text-gray-400 text-xs mt-2">
-              Otwórz ten link na telefonie w przeglądarce i zaloguj się do konta Xiaomi.
+              {t('xiaomiCloud.openLinkDesc')}
             </p>
           </div>
 
@@ -508,7 +564,7 @@ export const XiaomiCloudLogin: React.FC = () => {
             onClick={handleCancelLogin}
             className="px-4 py-2 text-sm text-gray-400 hover:text-white"
           >
-            Anuluj
+            {t('xiaomiCloud.cancel')}
           </button>
         </div>
 
@@ -528,26 +584,25 @@ export const XiaomiCloudLogin: React.FC = () => {
       <h3 className="text-lg font-medium text-white">Xiaomi Cloud</h3>
 
       <p className="text-sm text-gray-400">
-        Zaloguj sie do Xiaomi Cloud, aby automatycznie pobrac klucz BLE dla Twojej wagi.
-        Twoje dane logowania nie sa przechowywane.
+        {t('xiaomiCloud.cloudDescription')}
       </p>
 
       {/* Region selector */}
       <div className="space-y-2">
-        <label className="text-sm text-gray-300">Region serwera:</label>
+        <label className="text-sm text-gray-300">{t('xiaomiCloud.serverRegion')}</label>
         <select
           value={selectedRegion}
           onChange={(e) => setSelectedRegion(e.target.value as XiaomiRegion)}
           className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
         >
-          {REGIONS.map((region) => (
-            <option key={region.value} value={region.value}>
-              {region.label}
+          {REGION_VALUES.map((value) => (
+            <option key={value} value={value}>
+              {t(`xiaomiCloud.regions.${value}`)}
             </option>
           ))}
         </select>
         <p className="text-xs text-gray-500">
-          Wybierz region, w ktorym zarejestrowales swoje konto Mi Home.
+          {t('xiaomiCloud.regionHint')}
         </p>
       </div>
 
@@ -557,7 +612,7 @@ export const XiaomiCloudLogin: React.FC = () => {
         disabled={isLoading}
         className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors"
       >
-        {isLoading ? 'Ladowanie...' : 'Zaloguj przez QR kod'}
+        {isLoading ? t('xiaomiCloud.loading') : t('xiaomiCloud.loginWithQr')}
       </button>
 
       {/* Error display */}
@@ -570,16 +625,16 @@ export const XiaomiCloudLogin: React.FC = () => {
       {/* Help text */}
       <div className="text-xs text-gray-500 space-y-1">
         <p>
-          <strong>Jak to działa?</strong>
+          <strong>{t('xiaomiCloud.howItWorks')}</strong>
         </p>
         <ol className="list-decimal list-inside space-y-1">
-          <li>Kliknij "Zaloguj przez QR kod"</li>
-          <li>Otwórz wyświetlony link w przeglądarce na telefonie (lub zeskanuj QR aparatem)</li>
-          <li>Zaloguj się do swojego konta Xiaomi</li>
-          <li>Wybierz wagę z listy i pobierz klucz BLE</li>
+          <li>{t('xiaomiCloud.step1')}</li>
+          <li>{t('xiaomiCloud.step2')}</li>
+          <li>{t('xiaomiCloud.step3')}</li>
+          <li>{t('xiaomiCloud.step4')}</li>
         </ol>
         <p className="text-gray-600 mt-2">
-          Uwaga: Nie używaj skanera "dodaj urządzenie" w aplikacji Mi Home.
+          {t('xiaomiCloud.scannerWarning')}
         </p>
       </div>
     </div>

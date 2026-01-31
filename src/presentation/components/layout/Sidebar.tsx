@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppStore, Tab } from '../../stores/appStore';
 import { useHasGuestMeasurements, useGuestMeasurementsCount } from '../../stores/measurementStore';
 
@@ -84,16 +85,21 @@ const GuestIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 /**
- * Base navigation items configuration
+ * Navigation item IDs for generating items with translations
  */
-const baseNavItems: NavItem[] = [
-  { id: 'dashboard', label: 'Pulpit', icon: <DashboardIcon className="w-5 h-5" /> },
-  { id: 'measure', label: 'Pomiar', icon: <MeasureIcon className="w-5 h-5" /> },
-  { id: 'history', label: 'Historia', icon: <HistoryIcon className="w-5 h-5" /> },
-  { id: 'trends', label: 'Trendy', icon: <TrendsIcon className="w-5 h-5" /> },
-  { id: 'analysis', label: 'Analiza', icon: <AnalysisIcon className="w-5 h-5" /> },
-  { id: 'settings', label: 'Ustawienia', icon: <SettingsIcon className="w-5 h-5" /> },
-];
+const navItemIds: Tab[] = ['dashboard', 'measure', 'history', 'trends', 'analysis', 'settings'];
+
+/**
+ * Icon mapping for navigation items
+ */
+const navItemIcons: Record<Tab, React.ReactNode> = {
+  dashboard: <DashboardIcon className="w-5 h-5" />,
+  measure: <MeasureIcon className="w-5 h-5" />,
+  history: <HistoryIcon className="w-5 h-5" />,
+  trends: <TrendsIcon className="w-5 h-5" />,
+  analysis: <AnalysisIcon className="w-5 h-5" />,
+  settings: <SettingsIcon className="w-5 h-5" />,
+};
 
 /**
  * Sidebar navigation item
@@ -145,10 +151,11 @@ const GuestMeasurementsNavItem: React.FC<{
   isActive: boolean;
   isCollapsed: boolean;
   onClick: () => void;
-}> = ({ count, isActive, isCollapsed, onClick }) => {
+  label: string;
+}> = ({ count, isActive, isCollapsed, onClick, label }) => {
   const item: NavItem = {
     id: 'history', // Uses history tab but shows guest measurements
-    label: 'Pomiary gości',
+    label,
     icon: <GuestIcon className="w-5 h-5" />,
     badge: count,
   };
@@ -191,6 +198,7 @@ const GuestMeasurementsNavItem: React.FC<{
  * Sidebar component
  */
 export const Sidebar: React.FC = () => {
+  const { t } = useTranslation('navigation');
   const { activeTab, setActiveTab, isSidebarCollapsed, toggleSidebar } = useAppStore();
   const hasGuestMeasurements = useHasGuestMeasurements();
   const guestMeasurementsCount = useGuestMeasurementsCount();
@@ -212,6 +220,13 @@ export const Sidebar: React.FC = () => {
       setShowingGuestMeasurements(false);
     }
   }, [activeTab]);
+
+  // Generate navigation items with translated labels
+  const baseNavItems: NavItem[] = navItemIds.map((id) => ({
+    id,
+    label: t(`sidebar.${id}`),
+    icon: navItemIcons[id],
+  }));
 
   // Main navigation items (excluding history if guest measurements are shown)
   const mainNavItems = baseNavItems.filter((item) => {
@@ -249,7 +264,7 @@ export const Sidebar: React.FC = () => {
           onClick={toggleSidebar}
           className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-          title={isSidebarCollapsed ? 'Rozwin' : 'Zwin'}
+          title={isSidebarCollapsed ? t('actions.expand') : t('actions.collapse')}
         >
           <svg
             className={`w-5 h-5 text-gray-500 transition-transform ${isSidebarCollapsed ? 'rotate-180' : ''}`}
@@ -284,7 +299,7 @@ export const Sidebar: React.FC = () => {
             {!isSidebarCollapsed && (
               <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
                 <p className="px-3 py-1 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                  Nieprzypisane
+                  {t('sections.unassigned')}
                 </p>
               </div>
             )}
@@ -293,6 +308,7 @@ export const Sidebar: React.FC = () => {
               isActive={showingGuestMeasurements}
               isCollapsed={isSidebarCollapsed}
               onClick={handleGuestMeasurementsClick}
+              label={t('sections.guestMeasurements')}
             />
           </>
         )}

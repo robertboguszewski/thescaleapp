@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 
 export interface BodyScoreGaugeProps {
@@ -26,34 +27,37 @@ export interface BodyScoreGaugeProps {
 /**
  * Get score category and color
  */
-const getScoreCategory = (score: number): {
+const getScoreCategory = (
+  score: number,
+  t: (key: string) => string
+): {
   label: string;
   color: string;
   bgColor: string;
 } => {
   if (score >= 80) {
     return {
-      label: 'Doskonaly',
+      label: t('bodyScore.excellent'),
       color: '#22c55e', // green-500
       bgColor: 'bg-green-100 dark:bg-green-900/20',
     };
   }
   if (score >= 60) {
     return {
-      label: 'Dobry',
+      label: t('bodyScore.good'),
       color: '#3b82f6', // blue-500
       bgColor: 'bg-blue-100 dark:bg-blue-900/20',
     };
   }
   if (score >= 40) {
     return {
-      label: 'Przecietny',
+      label: t('bodyScore.average'),
       color: '#f59e0b', // amber-500
       bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
     };
   }
   return {
-    label: 'Do poprawy',
+    label: t('bodyScore.needsImprovement'),
     color: '#ef4444', // red-500
     bgColor: 'bg-red-100 dark:bg-red-900/20',
   };
@@ -69,6 +73,8 @@ export const BodyScoreGauge: React.FC<BodyScoreGaugeProps> = ({
   showLabels = true,
   className = '',
 }) => {
+  const { t } = useTranslation('dashboard');
+
   // Clamp score to valid range
   const clampedScore = Math.max(0, Math.min(100, score));
 
@@ -78,7 +84,7 @@ export const BodyScoreGauge: React.FC<BodyScoreGaugeProps> = ({
   const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
 
   // Get category info
-  const category = getScoreCategory(clampedScore);
+  const category = getScoreCategory(clampedScore, t);
 
   // Animation state
   const [animatedScore, setAnimatedScore] = React.useState(0);
@@ -168,7 +174,7 @@ export const BodyScoreGauge: React.FC<BodyScoreGaugeProps> = ({
               {category.label}
             </span>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Wynik ogolny skladn ciala
+              {t('bodyScore.description')}
             </p>
           </div>
         )}
@@ -201,12 +207,13 @@ export const MiniBodyScoreGauge: React.FC<{
   score: number;
   size?: number;
 }> = ({ score, size = 60 }) => {
+  const { t } = useTranslation('dashboard');
   const clampedScore = Math.max(0, Math.min(100, score));
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
-  const category = getScoreCategory(clampedScore);
+  const category = getScoreCategory(clampedScore, t);
 
   return (
     <div className="relative inline-flex" style={{ width: size, height: size }}>

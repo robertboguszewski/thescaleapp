@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { useSmartRecommendations, type SmartRecommendation, type RecommendationType } from '../../hooks/useSmartRecommendations';
@@ -114,7 +115,7 @@ const RecommendationItem: React.FC<{
 /**
  * Empty state when no recommendations
  */
-const EmptyRecommendations: React.FC = () => (
+const EmptyRecommendations: React.FC<{ t: (key: string) => string }> = ({ t }) => (
   <div className="text-center py-8">
     <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
       <svg className="w-6 h-6 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -123,10 +124,10 @@ const EmptyRecommendations: React.FC = () => (
       </svg>
     </div>
     <p className="text-sm font-medium text-gray-900 dark:text-white">
-      Wszystko w porzadku!
+      {t('recommendations.allGood')}
     </p>
     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-      Brak rekomendacji. Kontynuuj tak dalej!
+      {t('recommendations.allGoodMessage')}
     </p>
   </div>
 );
@@ -135,6 +136,7 @@ const EmptyRecommendations: React.FC = () => (
  * SmartRecommendations component
  */
 export const SmartRecommendations: React.FC = () => {
+  const { t } = useTranslation('dashboard');
   const recommendations = useSmartRecommendations();
   const { setActiveTab, setSettingsSubTab } = useAppStore();
 
@@ -148,9 +150,9 @@ export const SmartRecommendations: React.FC = () => {
   };
 
   return (
-    <Card title="Rekomendacje" subtitle="Na podstawie Twoich danych">
+    <Card title={t('recommendations.title')} subtitle={t('recommendations.subtitle')}>
       {recommendations.length === 0 ? (
-        <EmptyRecommendations />
+        <EmptyRecommendations t={t} />
       ) : (
         <div className="space-y-1 -m-1">
           {recommendations.map((rec) => (

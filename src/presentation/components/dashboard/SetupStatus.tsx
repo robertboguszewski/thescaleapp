@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { useSetupStatus, type SetupStep, type StepStatus } from '../../hooks/useSetupStatus';
@@ -52,16 +53,16 @@ const StepIcon: React.FC<{ status: StepStatus }> = ({ status }) => {
 /**
  * Get action button text based on step
  */
-const getActionText = (stepId: SetupStep['id']): string => {
+const getActionText = (stepId: SetupStep['id'], t: ReturnType<typeof useTranslation>['t']): string => {
   switch (stepId) {
     case 'profile':
-      return 'Rozpocznij';
+      return t('setup.startButton');
     case 'device':
-      return 'Konfiguruj';
+      return t('setup.configureButton');
     case 'measurement':
-      return 'Wykonaj pomiar';
+      return t('setup.measureButton');
     default:
-      return 'Przejdź';
+      return t('setup.nextButton');
   }
 };
 
@@ -73,6 +74,7 @@ const SetupStepItem: React.FC<{
   isLast: boolean;
   onNavigate: (tab: Tab, subTab?: string) => void;
 }> = ({ step, isLast, onNavigate }) => {
+  const { t } = useTranslation('dashboard');
   const handleClick = () => {
     onNavigate(step.navigateTo.tab, step.navigateTo.subTab);
   };
@@ -134,7 +136,7 @@ const SetupStepItem: React.FC<{
               onClick={handleClick}
               data-testid={`step-${step.id}-action`}
             >
-              {getActionText(step.id)}
+              {getActionText(step.id, t)}
             </Button>
           )}
 
@@ -144,7 +146,7 @@ const SetupStepItem: React.FC<{
               data-testid={`step-${step.id}-action`}
               className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
-              Edytuj
+              {t('setup.editButton')}
             </button>
           )}
         </div>
@@ -156,23 +158,26 @@ const SetupStepItem: React.FC<{
 /**
  * Progress bar component
  */
-const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="mt-4">
-    <div className="flex items-center justify-between text-sm mb-2">
-      <span className="text-gray-500 dark:text-gray-400">Postęp konfiguracji</span>
-      <span className="font-medium text-gray-900 dark:text-white">
-        {Math.round(progress)}%
-      </span>
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
+  const { t } = useTranslation('dashboard');
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between text-sm mb-2">
+        <span className="text-gray-500 dark:text-gray-400">{t('setup.configProgress')}</span>
+        <span className="font-medium text-gray-900 dark:text-white">
+          {Math.round(progress)}%
+        </span>
+      </div>
+      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div
+          data-testid="progress-bar"
+          className="h-full bg-primary-600 dark:bg-primary-500 rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
     </div>
-    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-      <div
-        data-testid="progress-bar"
-        className="h-full bg-primary-600 dark:bg-primary-500 rounded-full transition-all duration-500"
-        style={{ width: `${progress}%` }}
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 /**
  * SetupStatus component props
@@ -189,6 +194,7 @@ export interface SetupStatusProps {
  * initial app configuration. Automatically hides when setup is complete.
  */
 export const SetupStatus: React.FC<SetupStatusProps> = ({ className = '' }) => {
+  const { t } = useTranslation('dashboard');
   const {
     isSetupComplete,
     setupSteps,
@@ -212,8 +218,8 @@ export const SetupStatus: React.FC<SetupStatusProps> = ({ className = '' }) => {
   return (
     <Card
       className={className}
-      title="Konfiguracja aplikacji"
-      subtitle="Wykonaj poniższe kroki aby rozpocząć korzystanie z aplikacji"
+      title={t('setup.title')}
+      subtitle={t('setup.setupGuideSubtitle')}
     >
       <div className="space-y-1">
         {setupSteps.map((step, index) => (

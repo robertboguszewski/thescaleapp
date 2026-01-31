@@ -10,6 +10,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { BLEConnectionState, BLEError, BLEConfig, BLEDeviceInfo } from '../../application/ports/BLEPort';
+import type { RawMeasurement } from '../../domain/calculations/types';
+
+/**
+ * Measurement debounce time in milliseconds
+ */
+const MEASUREMENT_DEBOUNCE_MS = 5000;
 
 /**
  * BLE state interface
@@ -22,10 +28,15 @@ interface BLEState {
   // Device configuration
   deviceMac: string | null;
   bleKey: string | null;
+  deviceName: string | null;
 
   // Real-time measurement data
   liveWeight: number | null;
   isStable: boolean;
+
+  // Measurement data (centralized - for BLEService)
+  lastMeasurement: RawMeasurement | null;
+  lastMeasurementTimestamp: number;
 
   // Scanning
   isScanning: boolean;
@@ -55,6 +66,12 @@ interface BLEState {
   incrementRetryCount: () => void;
   resetRetryCount: () => void;
 
+  /**
+   * Handle incoming measurement with debouncing
+   * Returns true if measurement was accepted, false if debounced
+   */
+  handleMeasurement: (measurement: RawMeasurement) => boolean;
+
   reset: () => void;
 }
 
@@ -66,8 +83,13 @@ const initialState = {
   lastError: null,
   deviceMac: null,
   bleKey: null,
+  deviceName: null,
   liveWeight: null,
   isStable: false,
+  // Centralized measurement state
+  lastMeasurement: null as RawMeasurement | null,
+  lastMeasurementTimestamp: 0,
+  // Scanning
   isScanning: false,
   scanTimeout: 30000,
   discoveredDevices: [] as BLEDeviceInfo[],
@@ -106,12 +128,14 @@ export const useBLEStore = create<BLEState>()(
         set({
           deviceMac: config.deviceMac ?? get().deviceMac,
           bleKey: config.bleKey ?? get().bleKey,
+          deviceName: config.deviceName ?? get().deviceName,
         }),
 
       clearDeviceConfig: () =>
         set({
           deviceMac: null,
           bleKey: null,
+          deviceName: null,
         }),
 
       setLiveWeight: (liveWeight) => set({ liveWeight }),
@@ -149,12 +173,41 @@ export const useBLEStore = create<BLEState>()(
 
       resetRetryCount: () => set({ retryCount: 0 }),
 
+      handleMeasurement: (measurement) => {
+        const now = Date.now();
+        const lastTimestamp = get().lastMeasurementTimestamp;
+
+        // Debounce: ignore measurements within MEASUREMENT_DEBOUNCE_MS
+        if (now - lastTimestamp < MEASUREMENT_DEBOUNCE_MS) {
+          console.log('[bleStore] Measurement debounced (too soon after last)');
+          return false;
+        }
+
+        // Validate measurement range (2-300 kg is realistic for humans)
+        if (measurement.weightKg < 2 || measurement.weightKg > 300) {
+          console.log('[bleStore] Measurement rejected (invalid range):', measurement.weightKg);
+          return false;
+        }
+
+        // Accept measurement
+        set({
+          lastMeasurement: measurement,
+          lastMeasurementTimestamp: now,
+          liveWeight: measurement.weightKg,
+          isStable: true,
+        });
+
+        console.log('[bleStore] Measurement accepted:', measurement.weightKg, 'kg');
+        return true;
+      },
+
       reset: () =>
         set((state) => ({
           ...initialState,
           // Keep device config and auto-connect preference
           deviceMac: state.deviceMac,
           bleKey: state.bleKey,
+          deviceName: state.deviceName,
           autoConnect: state.autoConnect,
         })),
     }),
@@ -164,6 +217,7 @@ export const useBLEStore = create<BLEState>()(
       partialize: (state) => ({
         deviceMac: state.deviceMac,
         bleKey: state.bleKey,
+        deviceName: state.deviceName,
         autoConnect: state.autoConnect,
         scanTimeout: state.scanTimeout,
       }),
@@ -208,16 +262,17 @@ export const useCanRetry = () =>
   useBLEStore((state) => state.retryCount < state.maxRetries);
 
 /**
- * Get user-friendly status message
+ * Get user-friendly status message (translation key)
+ * Components using this should call t() on the returned key
  */
 export const getStatusMessage = (state: BLEConnectionState): string => {
   const messages: Record<BLEConnectionState, string> = {
-    disconnected: 'Rozłączono',
-    scanning: 'Szukam wagi...',
-    connecting: 'Łączenie...',
-    connected: 'Połączono',
-    reading: 'Odczyt pomiaru...',
-    error: 'Błąd połączenia',
+    disconnected: 'ble:status.disconnected',
+    scanning: 'ble:status.scanning',
+    connecting: 'ble:status.connecting',
+    connected: 'ble:status.connected',
+    reading: 'ble:status.reading',
+    error: 'ble:status.error',
   };
   return messages[state];
 };

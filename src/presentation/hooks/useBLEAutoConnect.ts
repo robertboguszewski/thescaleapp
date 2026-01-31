@@ -22,6 +22,13 @@ import { calculateAllMetrics } from '../../domain/calculations';
 import type { RawMeasurement } from '../../domain/calculations/types';
 
 /**
+ * Check if native BLE is available (running in Electron with Python bleak)
+ */
+function isNativeBLEAvailable(): boolean {
+  return !!(window as any).electronAPI?.nativeBLE;
+}
+
+/**
  * Standard BLE Service UUIDs
  */
 const SERVICE_UUIDS = {
@@ -272,6 +279,91 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
     }
   }, [currentProfile, setCurrentMeasurement, addMeasurement, setLiveWeight, setIsStable, addNotification]);
 
+  // Track if using native BLE
+  const usingNativeBLERef = useRef(false);
+
+  /**
+   * Native BLE Effect
+   * Uses Python bleak via IPC when running in Electron on macOS Sequoia
+   * This bypasses broken Web Bluetooth
+   */
+  useEffect(() => {
+    if (!isNativeBLEAvailable()) {
+      console.log('[AutoBLE] Native BLE not available, using Web Bluetooth');
+      return;
+    }
+
+    // Skip if already using native BLE or if device is not configured
+    if (usingNativeBLERef.current || !deviceMac || !autoConnect) {
+      return;
+    }
+
+    usingNativeBLERef.current = true;
+    console.log('[AutoBLE] Using Native BLE (Python bleak) for auto-connect');
+
+    const nativeBLE = (window as any).electronAPI.nativeBLE;
+    const cleanupFns: (() => void)[] = [];
+
+    // Subscribe to measurement events
+    const unsubMeasurement = nativeBLE.onMeasurement((measurement: { weightKg: number; impedanceOhm?: number; timestamp: string }) => {
+      console.log('[AutoBLE/Native] Measurement received:', measurement);
+      handleMeasurement({
+        weightKg: measurement.weightKg,
+        impedanceOhm: measurement.impedanceOhm,
+        timestamp: new Date(measurement.timestamp),
+      });
+    });
+    cleanupFns.push(unsubMeasurement);
+
+    // Subscribe to connected events
+    const unsubConnected = nativeBLE.onConnected((device: { id: string; name: string }) => {
+      console.log('[AutoBLE/Native] Connected to:', device.name);
+      setDeviceName(device.name);
+      setConnectionState('connected');
+    });
+    cleanupFns.push(unsubConnected);
+
+    // Subscribe to disconnected events
+    const unsubDisconnected = nativeBLE.onDisconnected(() => {
+      console.log('[AutoBLE/Native] Disconnected');
+      setConnectionState('disconnected');
+    });
+    cleanupFns.push(unsubDisconnected);
+
+    // Subscribe to scanning events
+    const unsubScanning = nativeBLE.onScanning(() => {
+      console.log('[AutoBLE/Native] Scanning started');
+      setConnectionState('scanning');
+    });
+    cleanupFns.push(unsubScanning);
+
+    // Subscribe to discovered events
+    const unsubDiscovered = nativeBLE.onDiscovered((device: { id: string; name: string }) => {
+      console.log('[AutoBLE/Native] Device discovered:', device.name);
+    });
+    cleanupFns.push(unsubDiscovered);
+
+    // Subscribe to error events
+    const unsubError = nativeBLE.onError((error: string) => {
+      console.error('[AutoBLE/Native] Error:', error);
+    });
+    cleanupFns.push(unsubError);
+
+    // Start scanning automatically
+    console.log('[AutoBLE/Native] Starting native BLE scanning...');
+    nativeBLE.startScanning().catch((err: Error) => {
+      console.error('[AutoBLE/Native] Failed to start scanning:', err);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      console.log('[AutoBLE/Native] Cleaning up...');
+      cleanupFns.forEach(fn => fn());
+      nativeBLE.stopScanning().catch(console.error);
+      usingNativeBLERef.current = false;
+    };
+  }, [deviceMac, autoConnect, handleMeasurement, setConnectionState]);
+
   /**
    * Start listening for notifications
    */
@@ -448,6 +540,26 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
    * Scan and connect to device
    */
   const scanAndConnect = useCallback(async (): Promise<boolean> => {
+    // Use native BLE if available (Electron/macOS)
+    if (isNativeBLEAvailable()) {
+      console.log('[AutoBLE] Using native BLE for scan and connect');
+      const nativeBLE = (window as any).electronAPI.nativeBLE;
+
+      cleanup();
+      setConnectionState('scanning');
+      setIsAutoConnecting(true);
+
+      try {
+        await nativeBLE.startScanning();
+        return true;
+      } catch (err) {
+        console.error('[AutoBLE/Native] Scan error:', err);
+        setConnectionState('idle');
+        setIsAutoConnecting(false);
+        return false;
+      }
+    }
+
     if (typeof navigator === 'undefined' || !('bluetooth' in navigator)) {
       console.error('[AutoBLE] Web Bluetooth not available');
       return false;
@@ -550,6 +662,12 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
   const watchingDeviceRef = useRef<BluetoothDevice | null>(null);
 
   const startAutoConnect = useCallback(async () => {
+    // Skip Web Bluetooth if native BLE is available (Electron/macOS)
+    if (isNativeBLEAvailable()) {
+      console.log('[AutoBLE] Using native BLE - skipping Web Bluetooth auto-connect');
+      return;
+    }
+
     if (!autoConnect || !deviceMac) {
       console.log('[AutoBLE] Auto-connect disabled or no saved device');
       return;

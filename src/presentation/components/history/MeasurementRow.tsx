@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MiniBodyScoreGauge } from '../dashboard/BodyScoreGauge';
 import type { StoredMeasurement } from '../../../infrastructure/storage/schemas';
 
@@ -25,15 +26,16 @@ export interface MeasurementRowProps {
 /**
  * Format date for display
  */
-const formatDate = (dateString: string): { date: string; time: string } => {
+const formatDate = (dateString: string, language: string): { date: string; time: string } => {
   const date = new Date(dateString);
+  const locale = language === 'pl' ? 'pl-PL' : 'en-US';
   return {
-    date: date.toLocaleDateString('pl-PL', {
+    date: date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     }),
-    time: date.toLocaleTimeString('pl-PL', {
+    time: date.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
     }),
@@ -49,7 +51,8 @@ export const MeasurementRow: React.FC<MeasurementRowProps> = ({
   onClick,
   onDelete,
 }) => {
-  const { date, time } = formatDate(measurement.timestamp);
+  const { t, i18n } = useTranslation(['history', 'dashboard']);
+  const { date, time } = formatDate(measurement.timestamp, i18n.language);
   const { raw, calculated } = measurement;
 
   return (
@@ -77,7 +80,7 @@ export const MeasurementRow: React.FC<MeasurementRowProps> = ({
         {/* Key metrics */}
         <div className="flex-1 grid grid-cols-4 gap-4">
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Waga</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('row.weight')}</p>
             <p className="font-semibold text-gray-900 dark:text-white">
               {raw.weightKg.toFixed(1)} <span className="text-xs text-gray-400">kg</span>
             </p>
@@ -119,43 +122,43 @@ export const MeasurementRow: React.FC<MeasurementRowProps> = ({
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800/50 rounded-b-xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Masa miesniowa</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.muscleMass')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.muscleMassKg.toFixed(1)} kg
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Woda</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.water')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.bodyWaterPercent.toFixed(1)}%
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Tluszcz trzewny</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.visceralFat')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.visceralFatLevel}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">BMR</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.metabolism')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {Math.round(calculated.bmrKcal)} kcal
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Masa beztluszczowa</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('history:metrics.leanMass')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.leanBodyMassKg.toFixed(1)} kg
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Masa kostna</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.boneMass')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.boneMassKg.toFixed(1)} kg
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Bialko</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('dashboard:metrics.protein')}</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {calculated.proteinPercent.toFixed(1)}%
               </p>
@@ -184,7 +187,7 @@ export const MeasurementRow: React.FC<MeasurementRowProps> = ({
                   <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
                   <path d="M10 11v6M14 11v6" />
                 </svg>
-                Usuń pomiar
+                {t('row.delete')}
               </button>
             </div>
           )}

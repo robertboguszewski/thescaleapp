@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { ProfileSelectionDialog, ProfileOption } from '../measurement/ProfileSelectionDialog';
@@ -102,6 +103,7 @@ const GuestMeasurementRow: React.FC<{
   onDelete: (measurementId: string) => void;
   isDeleting: boolean;
 }> = ({ measurement, onAssign, onDelete, isDeleting }) => {
+  const { t } = useTranslation('history');
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
   const handleDeleteClick = () => {
@@ -144,7 +146,7 @@ const GuestMeasurementRow: React.FC<{
         {showDeleteConfirm ? (
           <>
             <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
-              Usunąć?
+              {t('delete.confirm')}
             </span>
             <Button
               variant="danger"
@@ -171,7 +173,7 @@ const GuestMeasurementRow: React.FC<{
               onClick={() => onAssign(measurement.id)}
               leftIcon={<UserAssignIcon className="w-4 h-4" />}
             >
-              Przypisz do profilu
+              {t('guest.assign.title')}
             </Button>
             <Button
               variant="ghost"
@@ -191,19 +193,23 @@ const GuestMeasurementRow: React.FC<{
 /**
  * Empty state component
  */
-const EmptyState: React.FC = () => (
-  <div className="text-center py-12">
-    <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-      <WeightIcon className="w-8 h-8 text-gray-400" />
+const EmptyState: React.FC = () => {
+  const { t } = useTranslation('history');
+
+  return (
+    <div className="text-center py-12">
+      <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+        <WeightIcon className="w-8 h-8 text-gray-400" />
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+        {t('guest.empty.title')}
+      </h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        {t('guest.empty.description')}
+      </p>
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-      Brak pomiarów gości
-    </h3>
-    <p className="text-sm text-gray-500 dark:text-gray-400">
-      Pomiary zapisane jako gość pojawią się tutaj
-    </p>
-  </div>
-);
+  );
+};
 
 /**
  * GuestMeasurements component
@@ -213,6 +219,7 @@ const EmptyState: React.FC = () => (
  * - Delete measurement
  */
 export const GuestMeasurements: React.FC = () => {
+  const { t } = useTranslation('history');
   const { measurements, updateMeasurement, removeMeasurement } = useMeasurementStore();
   const { profiles } = useProfileStore();
   const { addNotification } = useAppStore();
@@ -242,67 +249,73 @@ export const GuestMeasurements: React.FC = () => {
   };
 
   // Handle profile selection for assignment
-  const handleProfileSelect = async (profileId: string) => {
-    if (!selectedMeasurementId) return;
+  const handleProfileSelect = React.useCallback(
+    async (profileId: string) => {
+      if (!selectedMeasurementId) return;
 
-    setIsAssigning(true);
+      setIsAssigning(true);
 
-    try {
-      // Update measurement with new profile ID
-      updateMeasurement(selectedMeasurementId, { userProfileId: profileId });
+      try {
+        // Update measurement with new profile ID
+        updateMeasurement(selectedMeasurementId, { userProfileId: profileId });
 
-      // TODO: Persist to backend via IPC
-      // await window.electronAPI.updateMeasurement(selectedMeasurementId, { userProfileId: profileId });
+        // TODO: Persist to backend via IPC
+        // await window.electronAPI.updateMeasurement(selectedMeasurementId, { userProfileId: profileId });
 
-      const profile = profiles.find((p) => p.id === profileId);
-      addNotification({
-        type: 'success',
-        title: 'Pomiar przypisany',
-        message: `Pomiar został przypisany do profilu ${profile?.name || 'wybranego'}`,
-        duration: 3000,
-      });
+        const profile = profiles.find((p) => p.id === profileId);
+        addNotification({
+          type: 'success',
+          title: t('guest.assign.success'),
+          message: t('guest.assign.successMessage', { profileName: profile?.name || t('guest.assign.selectedProfile') }),
+          duration: 3000,
+        });
 
-      setShowProfileSelector(false);
-      setSelectedMeasurementId(null);
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        title: 'Błąd przypisania',
-        message: 'Nie udało się przypisać pomiaru do profilu',
-        duration: 5000,
-      });
-    } finally {
-      setIsAssigning(false);
-    }
-  };
+        setShowProfileSelector(false);
+        setSelectedMeasurementId(null);
+      } catch (error) {
+        addNotification({
+          type: 'error',
+          title: t('guest.assign.error'),
+          message: t('guest.assign.errorMessage'),
+          duration: 5000,
+        });
+      } finally {
+        setIsAssigning(false);
+      }
+    },
+    [selectedMeasurementId, updateMeasurement, profiles, addNotification, t]
+  );
 
   // Handle delete measurement
-  const handleDelete = async (measurementId: string) => {
-    setDeletingId(measurementId);
+  const handleDelete = React.useCallback(
+    async (measurementId: string) => {
+      setDeletingId(measurementId);
 
-    try {
-      // Remove from store
-      removeMeasurement(measurementId);
+      try {
+        // Remove from store
+        removeMeasurement(measurementId);
 
-      // TODO: Persist to backend via IPC
-      // await window.electronAPI.deleteMeasurement(measurementId);
+        // TODO: Persist to backend via IPC
+        // await window.electronAPI.deleteMeasurement(measurementId);
 
-      addNotification({
-        type: 'success',
-        title: 'Pomiar usunięty',
-        duration: 3000,
-      });
-    } catch (error) {
-      addNotification({
-        type: 'error',
-        title: 'Błąd usuwania',
-        message: 'Nie udało się usunąć pomiaru',
-        duration: 5000,
-      });
-    } finally {
-      setDeletingId(null);
-    }
-  };
+        addNotification({
+          type: 'success',
+          title: t('delete.success'),
+          duration: 3000,
+        });
+      } catch (error) {
+        addNotification({
+          type: 'error',
+          title: t('guest.deleteError.title'),
+          message: t('guest.deleteError.message'),
+          duration: 5000,
+        });
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [removeMeasurement, addNotification, t]
+  );
 
   // Handle cancel profile selection
   const handleCancelSelection = () => {
@@ -313,8 +326,8 @@ export const GuestMeasurements: React.FC = () => {
   return (
     <>
       <Card
-        title="Pomiary gości"
-        subtitle={`${guestMeasurements.length} nieprzypisanych pomiarów`}
+        title={t('guest.title')}
+        subtitle={t('guest.subtitle', { count: guestMeasurements.length })}
       >
         {guestMeasurements.length === 0 ? (
           <EmptyState />
@@ -336,8 +349,8 @@ export const GuestMeasurements: React.FC = () => {
       {/* Profile selection dialog */}
       <ProfileSelectionDialog
         isOpen={showProfileSelector}
-        title="Przypisz pomiar do profilu"
-        message="Wybierz profil, do ktorego chcesz przypisac ten pomiar."
+        title={t('guest.assign.title')}
+        message={t('guest.assign.message')}
         profiles={availableProfiles}
         onSelect={handleProfileSelect}
         onSaveAsGuest={() => {
