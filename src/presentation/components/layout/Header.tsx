@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../../stores/appStore';
 import { useProfileStore, useCurrentProfile } from '../../stores/profileStore';
 import { useBLEStore, useIsDeviceConfigured, getStatusMessage, getStatusColor } from '../../stores/bleStore';
+import { SUPPORTED_LANGUAGES } from '../../../i18n';
 
 /**
  * Sun icon for light mode
@@ -256,6 +257,84 @@ const ProfileSelector: React.FC = () => {
 };
 
 /**
+ * Globe icon for language selector
+ */
+const GlobeIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
+/**
+ * Language selector dropdown
+ */
+const LanguageSelector: React.FC = () => {
+  const { i18n } = useTranslation();
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) || SUPPORTED_LANGUAGES[1]; // Default to English
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        title="Change language"
+      >
+        <GlobeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase">
+          {currentLang.code}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2
+                ${lang.code === i18n.language
+                  ? 'text-primary-600 dark:text-primary-400 font-medium'
+                  : 'text-gray-700 dark:text-gray-300'
+                }
+              `}
+            >
+              <span>{lang.flag}</span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
  * Theme toggle button
  */
 const ThemeToggle: React.FC = () => {
@@ -306,6 +385,7 @@ export const Header: React.FC = () => {
       >
         <BLEStatusIndicator />
         <ProfileSelector />
+        <LanguageSelector />
         <ThemeToggle />
       </div>
     </header>
