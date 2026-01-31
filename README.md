@@ -9,6 +9,8 @@ Desktop application for Xiaomi Mi Body Composition Scale S400 that enables weigh
 
 > **Note**: This application is not affiliated with or endorsed by Xiaomi Corporation.
 
+> **Disclaimer**: This project was created for learning purposes using [Claude Code](https://claude.ai/claude-code). Use at your own risk. The author assumes no responsibility for any issues arising from its use.
+
 ## Features
 
 - **BLE Connection**: Connect to Xiaomi Mi Body Composition Scale S400 via Bluetooth Low Energy
