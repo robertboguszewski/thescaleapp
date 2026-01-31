@@ -271,7 +271,7 @@ describe('useSetupStatus', () => {
       ]);
     });
 
-    it('should have correct labels in Polish', () => {
+    it('should have correct labels', () => {
       // Arrange
       mockProfileStore.mockImplementation((selector: (state: { profiles: unknown[] }) => unknown) =>
         selector({ profiles: [] })
@@ -285,9 +285,9 @@ describe('useSetupStatus', () => {
       const { result } = renderHook(() => useSetupStatus());
 
       // Assert
-      expect(result.current.setupSteps[0].label).toBe('Utwórz profil');
-      expect(result.current.setupSteps[1].label).toBe('Skonfiguruj wagę');
-      expect(result.current.setupSteps[2].label).toBe('Wykonaj pomiar');
+      expect(result.current.setupSteps[0].label).toBe('Create profile');
+      expect(result.current.setupSteps[1].label).toBe('Configure scale');
+      expect(result.current.setupSteps[2].label).toBe('Take measurement');
     });
 
     it('should mark profile step as completed when profile exists', () => {

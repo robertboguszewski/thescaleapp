@@ -45,7 +45,7 @@ vi.mock('../../../stores/bleStore', () => ({
     connectionState: 'disconnected',
   })),
   useIsDeviceConfigured: vi.fn(() => false),
-  getStatusMessage: vi.fn(() => 'Rozłączono'),
+  getStatusMessage: vi.fn(() => 'Disconnected'),
   getStatusColor: vi.fn(() => 'text-gray-500'),
 }));
 
@@ -99,7 +99,7 @@ describe('Header', () => {
   });
 
   describe('BLEStatusIndicator', () => {
-    it('should show "Konfiguruj wagę" button when device is not configured', () => {
+    it('should show "Configure scale" button when device is not configured', () => {
       // Arrange
       mockUseIsDeviceConfigured.mockReturnValue(false);
 
@@ -107,16 +107,16 @@ describe('Header', () => {
       render(<Header />);
 
       // Assert
-      expect(screen.getByText('Konfiguruj wagę')).toBeInTheDocument();
+      expect(screen.getByText('Configure scale')).toBeInTheDocument();
     });
 
-    it('should navigate to settings and set device sub-tab when clicking "Konfiguruj wagę"', () => {
+    it('should navigate to settings and set device sub-tab when clicking "Configure scale"', () => {
       // Arrange
       mockUseIsDeviceConfigured.mockReturnValue(false);
 
       // Act
       render(<Header />);
-      const configureButton = screen.getByText('Konfiguruj wagę');
+      const configureButton = screen.getByText('Configure scale');
       fireEvent.click(configureButton);
 
       // Assert
@@ -135,12 +135,12 @@ describe('Header', () => {
       render(<Header />);
 
       // Assert
-      expect(screen.queryByText('Konfiguruj wagę')).not.toBeInTheDocument();
+      expect(screen.queryByText('Configure scale')).not.toBeInTheDocument();
     });
   });
 
   describe('ProfileSelector', () => {
-    it('should show "Utwórz profil" button when no profiles exist', () => {
+    it('should show "Create profile" button when no profiles exist', () => {
       // Arrange
       mockUseProfileStore.mockReturnValue({
         profiles: [],
@@ -153,10 +153,10 @@ describe('Header', () => {
       render(<Header />);
 
       // Assert
-      expect(screen.getByText('Utwórz profil')).toBeInTheDocument();
+      expect(screen.getByText('Create profile')).toBeInTheDocument();
     });
 
-    it('should navigate to settings and set profiles sub-tab when clicking "Utwórz profil"', () => {
+    it('should navigate to settings and set profiles sub-tab when clicking "Create profile"', () => {
       // Arrange
       mockUseProfileStore.mockReturnValue({
         profiles: [],
@@ -167,7 +167,7 @@ describe('Header', () => {
 
       // Act
       render(<Header />);
-      const createProfileButton = screen.getByText('Utwórz profil');
+      const createProfileButton = screen.getByText('Create profile');
       fireEvent.click(createProfileButton);
 
       // Assert
@@ -198,10 +198,10 @@ describe('Header', () => {
 
       // Assert
       expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
-      expect(screen.queryByText('Utwórz profil')).not.toBeInTheDocument();
+      expect(screen.queryByText('Create profile')).not.toBeInTheDocument();
     });
 
-    it('should navigate to settings/profiles when clicking "Nowy profil" in dropdown', () => {
+    it('should navigate to settings/profiles when clicking "New profile" in dropdown', () => {
       // Arrange
       mockUseProfileStore.mockReturnValue({
         profiles: [{ id: 'profile-1', name: 'Jan Kowalski', gender: 'male', age: 30, isDefault: true }],
@@ -221,8 +221,8 @@ describe('Header', () => {
       const profileButton = screen.getByText('Jan Kowalski');
       fireEvent.click(profileButton);
 
-      // Click "Nowy profil"
-      const newProfileButton = screen.getByText('Nowy profil');
+      // Click "New profile"
+      const newProfileButton = screen.getByText('New profile');
       fireEvent.click(newProfileButton);
 
       // Assert
@@ -247,7 +247,7 @@ describe('Header', () => {
       render(<Header />);
 
       // Assert
-      expect(screen.getByText('Pulpit')).toBeInTheDocument();
+      expect(screen.getByText('Dashboard')).toBeInTheDocument();
     });
 
     it('should display "Ustawienia" title when on settings tab', () => {
@@ -264,7 +264,7 @@ describe('Header', () => {
       render(<Header />);
 
       // Assert
-      expect(screen.getByText('Ustawienia')).toBeInTheDocument();
+      expect(screen.getByText('Settings')).toBeInTheDocument();
     });
   });
 });

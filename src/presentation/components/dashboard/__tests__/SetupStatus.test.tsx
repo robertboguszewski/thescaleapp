@@ -42,22 +42,22 @@ describe('SetupStatus', () => {
   const createMockSteps = (statuses: StepStatus[]): SetupStep[] => [
     {
       id: 'profile',
-      label: 'Utwórz profil',
-      description: 'Dodaj swój profil z danymi osobowymi',
+      label: 'Create profile',
+      description: 'Add your profile with personal data',
       status: statuses[0],
       navigateTo: { tab: 'settings', subTab: 'profiles' },
     },
     {
       id: 'device',
-      label: 'Skonfiguruj wagę',
-      description: 'Połącz wagę Xiaomi przez Bluetooth',
+      label: 'Configure scale',
+      description: 'Connect Xiaomi scale via Bluetooth',
       status: statuses[1],
       navigateTo: { tab: 'settings', subTab: 'device' },
     },
     {
       id: 'measurement',
-      label: 'Wykonaj pomiar',
-      description: 'Wykonaj pierwszy pomiar masy ciała',
+      label: 'Take measurement',
+      description: 'Take your first body weight measurement',
       status: statuses[2],
       navigateTo: { tab: 'measure' },
     },
@@ -94,7 +94,7 @@ describe('SetupStatus', () => {
       render(<SetupStatus />);
 
       // Assert
-      expect(screen.getByText('Konfiguracja aplikacji')).toBeInTheDocument();
+      expect(screen.getByText('App Configuration')).toBeInTheDocument();
     });
 
     it('should display all three setup steps', () => {
@@ -113,9 +113,9 @@ describe('SetupStatus', () => {
       render(<SetupStatus />);
 
       // Assert
-      expect(screen.getByText('Utwórz profil')).toBeInTheDocument();
-      expect(screen.getByText('Skonfiguruj wagę')).toBeInTheDocument();
-      expect(screen.getByText('Wykonaj pomiar')).toBeInTheDocument();
+      expect(screen.getByText('Create profile')).toBeInTheDocument();
+      expect(screen.getByText('Configure scale')).toBeInTheDocument();
+      expect(screen.getByText('Take measurement')).toBeInTheDocument();
     });
 
     it('should show step descriptions', () => {
@@ -134,7 +134,7 @@ describe('SetupStatus', () => {
       render(<SetupStatus />);
 
       // Assert
-      expect(screen.getByText('Dodaj swój profil z danymi osobowymi')).toBeInTheDocument();
+      expect(screen.getByText('Add your profile with personal data')).toBeInTheDocument();
     });
   });
 
