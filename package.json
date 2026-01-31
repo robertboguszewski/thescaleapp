@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "electron .",
-    "dev": "npm run build:main && NODE_ENV=development electron .",
+    "dev": "./scripts/dev.sh",
+    "dev:broken": "npm run build:main && NODE_ENV=development electron .",
     "dev:renderer": "vite",
     "dev:watch": "npm run build:main -- --watch",
     "dev:full": "concurrently \"npm run dev:renderer\" \"npm run dev:watch\"",
@@ -52,7 +53,7 @@
     "@vitest/coverage-v8": "^1.6.1",
     "autoprefixer": "^10.4.24",
     "concurrently": "^8.2.2",
-    "electron": "^40.1.0",
+    "electron": "^28.3.3",
     "electron-builder": "^24.13.3",
     "jsdom": "^27.4.0",
     "postcss": "^8.5.6",

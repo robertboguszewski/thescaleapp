@@ -140,6 +140,38 @@ All BLE-related tests pass:
 
 ---
 
+---
+
+## GATT Implementation Analysis (2026-01-31)
+
+### Completed
+- Dual mode support (mibeacon/gatt) in BleakBLEAdapter.ts
+- Basic GATT scanner (ble-gatt-scanner.py) with weight parsing
+- Scan mode IPC handlers and type definitions
+
+### Gaps Identified
+See [GAP_ANALYSIS.md](GAP_ANALYSIS.md) for full details.
+
+| Gap | Priority | Status |
+|-----|----------|--------|
+| Auto-reconnection on disconnect | HIGH | ✅ Implemented |
+| Stabilized weight detection | HIGH | ✅ Implemented |
+| Body composition via GATT (0x2A9C) | LOW | N/A (by design) |
+| Disconnect callback propagation | MEDIUM | ✅ Implemented |
+| Data flow bottleneck (heartRateBpm, impedanceLowOhm) | HIGH | ✅ Verified (works correctly) |
+
+### Fixes Applied (2026-01-31)
+1. ✅ Added `WeightStabilityTracker` class for GATT stabilization detection
+2. ✅ Implemented disconnect callback with auto-reconnect (exponential backoff)
+3. ✅ Verified data flow - all fields propagate correctly to frontend
+4. ✅ Renamed `ble-gatt-scanner.py` → `ble_gatt_scanner.py` (Python module convention)
+
+### Note on GATT vs MiBeacon
+- **GATT mode**: Real-time weight only (no impedance/HR - protocol limitation)
+- **MiBeacon mode**: Full data (weight + impedance + HR) but final measurements only
+
+---
+
 ## Conclusion
 
 The BLE singleton/context architecture is now properly integrated:
@@ -150,3 +182,5 @@ The BLE singleton/context architecture is now properly integrated:
 4. **No regression in other tests** (4 pre-existing i18n failures)
 
 The architecture follows industry best practices for React singleton services with Electron IPC.
+
+**GATT Mode**: Basic implementation complete but needs stabilization detection and reconnection logic before production use.
