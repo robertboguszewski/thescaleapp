@@ -5,6 +5,9 @@
  * on macOS Sequoia. Bleak uses CoreBluetooth directly, which works
  * correctly on newer macOS versions.
  *
+ * S400 sends weight data via BLE advertisement broadcasts (not GATT),
+ * so this adapter parses advertisements during continuous scanning.
+ *
  * @module main/ble/BleakBLEAdapter
  */
 
@@ -29,7 +32,7 @@ const DEFAULT_CONFIG: BLEAdapterConfig = {
   deviceMac: null,
   autoConnect: true,
   scanInterval: 5000,
-  scanTimeout: 30000,
+  scanTimeout: 60000, // Longer timeout for advertisement-based scanning
   allowDuplicates: true,
 };
 
@@ -56,6 +59,7 @@ interface ScannerMessage {
     timestamp?: string;
   };
   devicesFound?: number;
+  measurementsReceived?: number;
 }
 
 /**
@@ -128,6 +132,7 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
       scannerPath,
       '--scan-duration',
       String(this.config.scanTimeout / 1000),
+      '--continuous', // Keep scanning for advertisement-based measurements
     ];
 
     if (this.config.deviceMac) {
@@ -200,12 +205,19 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
       case 'status':
         console.log('[BleakBLEAdapter] Status:', message.status, message.message);
 
-        if (message.status === 'scanning') {
+        if (message.status === 'scanning' || message.status === 'initializing') {
           this.state = 'scanning';
           this.emit('scanning');
         } else if (message.status === 'stopped') {
           this.isScanning = false;
-          console.log('[BleakBLEAdapter] Scan completed, devices found:', message.devicesFound);
+          console.log('[BleakBLEAdapter] Scan completed, devices found:', message.devicesFound, 'measurements:', message.measurementsReceived);
+
+          // Auto-restart if enabled and we should keep scanning
+          if (this.config.autoConnect) {
+            this.scheduleReconnect();
+          }
+        } else if (message.status === 'restarting') {
+          console.log('[BleakBLEAdapter] Scanner restarting...');
         }
         break;
 
@@ -217,16 +229,19 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
             name: message.device.name,
             rssi: message.device.rssi,
           };
-          this.emit('discovered', device);
 
-          // Auto-connect logic
-          if (this.config.autoConnect && !this.connectedDeviceId) {
-            if (!this.config.deviceMac || message.device.id.toLowerCase() === this.config.deviceMac?.toLowerCase()) {
-              this.handleConnection(message.device.id, message.device.name);
-              // Stop scanning once we've connected to the scale
-              this.stopScanning().catch(console.error);
-            }
+          // Track discovered device as "connected" for UI purposes
+          // (advertisement-based, not actual GATT connection)
+          if (!this.connectedDeviceId) {
+            this.connectedDeviceId = message.device.id;
+            this.connectedDeviceName = message.device.name;
+            this.config.deviceMac = message.device.id;
+            this.state = 'connected';
+
+            this.emit('connected', device);
           }
+
+          this.emit('discovered', device);
         }
         break;
 
@@ -234,15 +249,23 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
         if (message.measurement) {
           console.log('[BleakBLEAdapter] Measurement received:', message.measurement);
 
-          // Only emit stabilized measurements
-          if (message.measurement.isStabilized) {
-            const rawMeasurement: RawMeasurement = {
-              weightKg: message.measurement.weightKg,
-              impedanceOhm: message.measurement.impedanceOhm,
-              timestamp: message.measurement.timestamp ? new Date(message.measurement.timestamp) : new Date(),
-            };
-            this.emit('measurement', rawMeasurement);
+          // Update connected device info from measurement
+          if (message.deviceId && !this.connectedDeviceId) {
+            this.connectedDeviceId = message.deviceId;
+            this.connectedDeviceName = message.deviceName || 'Mi Scale';
+            this.state = 'connected';
           }
+
+          // Emit all measurements (both stabilized and in-progress for UI feedback)
+          const rawMeasurement: RawMeasurement = {
+            weightKg: message.measurement.weightKg,
+            impedanceOhm: message.measurement.impedanceOhm,
+            timestamp: message.measurement.timestamp ? new Date(message.measurement.timestamp) : new Date(),
+            isStabilized: message.measurement.isStabilized,
+          };
+
+          // Always emit measurement for real-time feedback
+          this.emit('measurement', rawMeasurement);
         }
         break;
 
@@ -252,10 +275,8 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
         break;
 
       case 'debug':
-        // Log debug messages but don't propagate
-        if (message.device) {
-          console.log('[BleakBLEAdapter] Device found:', message.device.name || '(unnamed)', message.device.id);
-        } else if (message.message) {
+        // Log debug messages for troubleshooting
+        if (message.message) {
           console.log('[BleakBLEAdapter] Debug:', message.message);
         }
         break;
@@ -263,31 +284,14 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
   }
 
   /**
-   * Handle connection to a device
-   */
-  private handleConnection(deviceId: string, deviceName: string): void {
-    this.connectedDeviceId = deviceId;
-    this.connectedDeviceName = deviceName;
-    this.config.deviceMac = deviceId;
-    this.state = 'connected';
-
-    console.log('[BleakBLEAdapter] Connected to:', deviceName, deviceId);
-
-    this.emit('connected', {
-      id: deviceId,
-      name: deviceName,
-    });
-  }
-
-  /**
-   * Schedule a reconnection attempt
+   * Schedule a scan restart
    */
   private scheduleReconnect(): void {
     if (this.reconnectTimer) return;
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      console.log('[BleakBLEAdapter] Attempting reconnect...');
+      console.log('[BleakBLEAdapter] Restarting scan...');
       this.startScanning().catch(console.error);
     }, this.config.scanInterval);
   }

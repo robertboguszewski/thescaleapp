@@ -11,6 +11,7 @@ export interface RawMeasurement {
   weightKg: number;
   impedanceOhm?: number;
   timestamp?: Date;
+  isStabilized?: boolean;
 }
 
 /**
