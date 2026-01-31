@@ -15,6 +15,11 @@ files:
   - dist/**/*
   - package.json
 
+# Extra resources to include (Python BLE scanner)
+extraResources:
+  - from: scripts/ble-scanner.py
+    to: scripts/ble-scanner.py
+
 # Icon configuration
 icon: build/icons/icon
 
