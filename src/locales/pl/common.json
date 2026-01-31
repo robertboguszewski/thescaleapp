@@ -1,0 +1,97 @@
+{
+  "buttons": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "create": "Utwórz",
+    "confirm": "Potwierdź",
+    "close": "Zamknij",
+    "clear": "Wyczyść",
+    "reset": "Resetuj",
+    "search": "Szukaj",
+    "stopSearch": "Zatrzymaj",
+    "newMeasurement": "Nowy pomiar",
+    "newProfile": "Nowy profil",
+    "createProfile": "Utwórz profil",
+    "saveChanges": "Zapisz zmiany",
+    "saveConfig": "Zapisz konfigurację",
+    "retry": "Spróbuj ponownie",
+    "dismiss": "Odrzuć",
+    "more": "Więcej",
+    "connect": "Połącz",
+    "configure": "Konfiguruj"
+  },
+  "status": {
+    "loading": "Ładowanie...",
+    "error": "Wystąpił błąd",
+    "success": "Sukces",
+    "connected": "Połączono",
+    "disconnected": "Rozłączono",
+    "configured": "Skonfigurowano",
+    "notConfigured": "Nie skonfigurowano"
+  },
+  "time": {
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "daysAgo": "{{count}} dni temu",
+    "daysAgo_one": "{{count}} dzień temu",
+    "weeksAgo": "{{count}} tygodni temu",
+    "weeksAgo_one": "{{count}} tydzień temu",
+    "monthsAgo": "{{count}} miesięcy temu",
+    "monthsAgo_one": "{{count}} miesiąc temu"
+  },
+  "units": {
+    "kg": "kg",
+    "cm": "cm",
+    "percent": "%",
+    "years": "lat",
+    "years_one": "rok",
+    "seconds": "sekund",
+    "seconds_one": "sekunda"
+  },
+  "form": {
+    "select": "Wybierz...",
+    "required": "Pole wymagane",
+    "optional": "opcjonalnie"
+  },
+  "gender": {
+    "male": "Mężczyzna",
+    "female": "Kobieta",
+    "maleShort": "M",
+    "femaleShort": "K"
+  },
+  "ethnicity": {
+    "asian": "Azjatyckie",
+    "nonAsian": "Inne"
+  },
+  "months": {
+    "1": "Styczeń",
+    "2": "Luty",
+    "3": "Marzec",
+    "4": "Kwiecień",
+    "5": "Maj",
+    "6": "Czerwiec",
+    "7": "Lipiec",
+    "8": "Sierpień",
+    "9": "Wrzesień",
+    "10": "Październik",
+    "11": "Listopad",
+    "12": "Grudzień"
+  },
+  "theme": {
+    "light": "Tryb jasny",
+    "dark": "Tryb ciemny",
+    "auto": "Auto"
+  },
+  "profile": {
+    "create": "Utwórz profil",
+    "select": "Wybierz profil",
+    "default": "domyślny",
+    "new": "Nowy profil"
+  },
+  "errors": {
+    "unknown": "Nieznany błąd",
+    "electronApiUnavailable": "Electron API niedostępne"
+  }
+}

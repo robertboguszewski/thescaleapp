@@ -1,0 +1,27 @@
+{
+  "profile": {
+    "name": {
+      "required": "Profile name is required",
+      "maxLength": "Profile name cannot exceed {{max}} characters"
+    },
+    "gender": {
+      "required": "Gender is required"
+    },
+    "age": {
+      "range": "Age must be between {{min}}-{{max}} years"
+    },
+    "height": {
+      "range": "Height must be between {{min}}-{{max}} cm"
+    }
+  },
+  "device": {
+    "mac": {
+      "invalid": "Invalid MAC address",
+      "format": "Format: XX:XX:XX:XX:XX:XX"
+    },
+    "bleKey": {
+      "invalid": "Invalid BLE key",
+      "length": "Key must be 24 or 32 hexadecimal characters"
+    }
+  }
+}

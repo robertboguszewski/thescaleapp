@@ -1,0 +1,125 @@
+{
+  "title": "Dashboard",
+  "setupIncomplete": "You have saved measurements, but complete the setup to use all features.",
+  "metrics": {
+    "weight": "Weight",
+    "bmi": "BMI",
+    "bodyFat": "Body fat",
+    "visceralFat": "Visceral fat",
+    "muscleMass": "Muscle mass",
+    "boneMass": "Bone mass",
+    "water": "Water",
+    "protein": "Protein",
+    "metabolism": "Metabolism",
+    "bodyAge": "Body age",
+    "bodyScore": "Body score"
+  },
+  "trends": {
+    "stable": "Stable",
+    "up": "Up",
+    "down": "Down"
+  },
+  "status": {
+    "good": "Good",
+    "warning": "Warning",
+    "critical": "Critical",
+    "neutral": "Neutral"
+  },
+  "quickActions": {
+    "title": "Quick actions",
+    "newMeasurement": "New measurement",
+    "newMeasurementDesc": "Take body composition measurement",
+    "viewHistory": "History",
+    "viewHistoryDesc": "Browse previous measurements",
+    "viewTrends": "Trends",
+    "viewTrendsDesc": "Analyze changes over time",
+    "settings": "Settings",
+    "settingsDesc": "Configure application"
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "subtitle": "Based on your data",
+    "noData": "Take a measurement to receive personalized recommendations.",
+    "allGood": "All good!",
+    "allGoodMessage": "No recommendations. Keep it up!"
+  },
+  "activity": {
+    "title": "Recent activity",
+    "noMeasurements": "No measurements",
+    "noActivities": "No recent activities",
+    "measurementAdded": "Measurement added",
+    "profileCreated": "Profile created",
+    "measurement": "Measurement",
+    "profile": "Profile",
+    "noProfile": "without profile"
+  },
+  "weeklyTrend": {
+    "title": "Weekly trend",
+    "noData": "Not enough data to display trend",
+    "measureToSee": "Take a measurement to see trend",
+    "measurementsThisWeek": "{{count}} measurement",
+    "measurementsThisWeek_plural": "{{count}} measurements"
+  },
+  "bodyScore": {
+    "title": "Body score",
+    "excellent": "Excellent",
+    "good": "Good",
+    "average": "Average",
+    "needsImprovement": "Needs improvement",
+    "description": "Overall body composition score"
+  },
+  "setup": {
+    "title": "Setup",
+    "setupGuideSubtitle": "Follow the steps below to get started using the app",
+    "step1": "Configure scale",
+    "step1Desc": "Connect to Xiaomi Mi Scale",
+    "step2": "Create profile",
+    "step2Desc": "Add your user profile",
+    "step3": "Take measurement",
+    "step3Desc": "Step on the scale and take your first measurement",
+    "complete": "Setup complete!",
+    "completeDesc": "Your scale is ready to use.",
+    "configProgress": "Setup progress",
+    "startButton": "Start",
+    "configureButton": "Configure",
+    "measureButton": "Take measurement",
+    "nextButton": "Next",
+    "editButton": "Edit"
+  },
+  "statusOverview": {
+    "title": "Status",
+    "currentWeight": "Current weight",
+    "lastMeasurement": "Last measurement",
+    "noData": "No data",
+    "device": "Device",
+    "profile": "Profile",
+    "notConfigured": "Not configured",
+    "time": {
+      "justNow": "just now",
+      "minutesAgo": "{{count}} min ago",
+      "hoursAgo": "{{count}} h ago",
+      "weeksAgo": "{{count}} week ago",
+      "weeksAgo_plural": "{{count}} weeks ago"
+    }
+  },
+  "trendsChart": {
+    "noData": "Not enough data to display",
+    "noDataDescription": "Take a few measurements to see trends and analysis of changes over time.",
+    "takeMeasurement": "Take measurement",
+    "measurements": "{{count}} measurement",
+    "measurements_plural": "{{count}} measurements",
+    "minimum": "Minimum",
+    "maximum": "Maximum",
+    "average": "Average",
+    "change": "Change",
+    "allMetrics": "All metrics",
+    "lastMeasurement": "Last measurement"
+  },
+  "dateRange": {
+    "days7": "7 days",
+    "days30": "30 days",
+    "months3": "3 months",
+    "year": "Year",
+    "all": "All"
+  }
+}

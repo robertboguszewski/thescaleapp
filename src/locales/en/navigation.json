@@ -1,0 +1,35 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "measure": "Measure",
+    "history": "History",
+    "trends": "Trends",
+    "analysis": "Analysis",
+    "settings": "Settings"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "measure": "New measurement",
+    "history": "Measurement history",
+    "trends": "Trends",
+    "analysis": "Analysis",
+    "settings": "Settings"
+  },
+  "sections": {
+    "unassigned": "Unassigned",
+    "guestMeasurements": "Guest measurements"
+  },
+  "actions": {
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "header": {
+    "configureScale": "Configure scale",
+    "selectProfile": "Select profile",
+    "createProfile": "Create profile",
+    "newProfile": "New profile",
+    "defaultIndicator": "(default)",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
+  }
+}

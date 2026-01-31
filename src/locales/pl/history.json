@@ -1,0 +1,44 @@
+{
+  "title": "Historia pomiarów",
+  "totalMeasurements": "Łącznie: {{count}} pomiarów",
+  "pagination": "Strona {{current}} z {{total}} ({{count}} pomiarów)",
+  "empty": {
+    "title": "Brak pomiarów",
+    "description": "Nie masz jeszcze żadnych zapisanych pomiarów. Wykonaj pierwszy pomiar, aby rozpocząć śledzenie wyników.",
+    "action": "Wykonaj pomiar"
+  },
+  "delete": {
+    "confirm": "Usunąć pomiar?",
+    "warning": "Ta operacja jest nieodwracalna. Pomiar zostanie trwale usunięty z historii.",
+    "success": "Pomiar usunięty",
+    "cancel": "Anuluj",
+    "delete": "Usuń"
+  },
+  "row": {
+    "weight": "Waga",
+    "delete": "Usuń pomiar"
+  },
+  "metrics": {
+    "leanMass": "Masa beztłuszczowa"
+  },
+  "guest": {
+    "title": "Pomiary gości",
+    "subtitle": "{{count}} nieprzypisanych pomiarów",
+    "empty": {
+      "title": "Brak pomiarów gości",
+      "description": "Pomiary zapisane jako gość pojawią się tutaj"
+    },
+    "assign": {
+      "title": "Przypisz pomiar do profilu",
+      "message": "Wybierz profil, do którego chcesz przypisać ten pomiar.",
+      "success": "Pomiar przypisany",
+      "successMessage": "Pomiar został przypisany do profilu {{profileName}}",
+      "error": "Błąd przypisania",
+      "errorMessage": "Nie udało się przypisać pomiaru do profilu"
+    },
+    "deleteError": {
+      "title": "Błąd usuwania",
+      "message": "Nie udało się usunąć pomiaru"
+    }
+  }
+}

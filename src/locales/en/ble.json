@@ -1,0 +1,145 @@
+{
+  "status": {
+    "disconnected": "Disconnected",
+    "scanning": "Searching for scale...",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "reading": "Reading measurement...",
+    "error": "Connection error",
+    "configured": "Configured",
+    "notConfigured": "Not configured"
+  },
+  "device": {
+    "noMacAddress": "No MAC address",
+    "searchDevices": "Search devices",
+    "stopScanning": "Stop scanning",
+    "searchingDevices": "Searching for Mi Scale devices...",
+    "foundDevices": "Found devices ({{count}})",
+    "deviceSelected": "Device selected",
+    "macAddress": "MAC: {{mac}}",
+    "clickToSearch": "Click \"Search devices\" to find a scale nearby",
+    "connectedTo": "Connected to scale: {{deviceName}}",
+    "cancelled": "Cancelled",
+    "waitingForConfigured": "Waiting for configured scale... Step on the scale to wake it up",
+    "scanning": "Scanning... Step on the scale to wake it up",
+    "foundScale": "Found scale: {{deviceName}}",
+    "searchingMiScale": "Searching for Mi Scale... Step on the scale to wake it up",
+    "searchingSaved": "Searching for saved scale... Step on the scale to wake it up"
+  },
+  "scan": {
+    "completed": "Scan completed",
+    "foundCount": "Found {{count}} devices",
+    "error": "Scan error"
+  },
+  "connection": {
+    "autoConnect": "Auto connect",
+    "autoConnectDesc": "Automatically connect to scale on app startup",
+    "scanTimeout": "Scan timeout",
+    "scanTimeoutDesc": "Maximum time to search for scale"
+  },
+  "notifications": {
+    "measurementSaved": {
+      "title": "Measurement saved",
+      "message": "{{weight}} kg - {{profileName}}"
+    },
+    "newMeasurement": {
+      "title": "New measurement",
+      "message": "{{weight}} kg - Select a profile to save"
+    },
+    "connectionLost": {
+      "title": "Connection lost",
+      "message": "Could not connect. Step on the scale and click \"Try again\".",
+      "retryButton": "Try again"
+    },
+    "connected": {
+      "title": "Connected to scale",
+      "message": "{{deviceName}} - step on the scale to measure"
+    },
+    "autoConnected": {
+      "title": "Automatically connected!",
+      "message": "{{deviceName}} - listening active"
+    },
+    "selectionCancelled": {
+      "title": "Device selection cancelled",
+      "message": "Tip: Step on the scale to wake it up, then try again. The scale should appear on the list."
+    },
+    "bluetoothError": {
+      "title": "Bluetooth error",
+      "message": "Check if Bluetooth is enabled in System Settings."
+    },
+    "connectionError": {
+      "title": "Connection error"
+    },
+    "scaleConfigured": {
+      "title": "Scale configured",
+      "message": "Click \"Activate listening\" to connect"
+    },
+    "autoListeningActive": {
+      "title": "Automatic listening active",
+      "message": "Step on the scale - connection will happen automatically"
+    },
+    "scanning": {
+      "title": "Scanning...",
+      "message": "Step on the scale to wake it up"
+    },
+    "scanTimeout": {
+      "title": "Scan timeout",
+      "message": "Scale not found. Try again - make sure you are standing on the scale."
+    }
+  },
+  "states": {
+    "disconnected": {
+      "title": "Disconnected",
+      "description": "Scale is not connected. Press \"Connect\" to begin.",
+      "action": "Connect"
+    },
+    "scanning": {
+      "title": "Searching for scale...",
+      "description": "Make sure the scale is turned on and within Bluetooth range."
+    },
+    "connecting": {
+      "title": "Connecting...",
+      "description": "Establishing connection to the scale. This may take a few seconds."
+    },
+    "connected": {
+      "title": "Connected",
+      "description": "Scale is ready. Step on the scale to start measurement.",
+      "action": "Start measurement"
+    },
+    "reading": {
+      "title": "Measurement in progress...",
+      "description": "Stand still. Waiting for scale stabilization."
+    },
+    "error": {
+      "title": "Error",
+      "description": "A connection problem occurred.",
+      "action": "Try again"
+    }
+  },
+  "errors": {
+    "BLUETOOTH_OFF": {
+      "message": "Bluetooth is turned off",
+      "suggestion": "Enable Bluetooth in System Settings (Command + Space, type \"Bluetooth\")"
+    },
+    "DEVICE_NOT_FOUND": {
+      "message": "Xiaomi S400 scale not found",
+      "suggestion": "Make sure that:\n  - Scale is turned on (step on it)\n  - You are in range (< 5 meters)\n  - Xiaomi Home app is closed"
+    },
+    "CONNECTION_TIMEOUT": {
+      "message": "Connection timeout (30s)",
+      "suggestion": "Try:\n  - Turn Bluetooth off and on\n  - Get closer to the scale\n  - Remove obstacles between devices"
+    },
+    "READ_FAILED": {
+      "message": "Failed to read data from scale",
+      "suggestion": "Scale may have disconnected. Try to measure again."
+    },
+    "DECRYPTION_FAILED": {
+      "message": "Data decryption error",
+      "suggestion": "BLE key may be incorrect. Check configuration in Settings or export the key again from Xiaomi Cloud."
+    },
+    "INVALID_DATA": {
+      "message": "Received invalid data",
+      "suggestion": "Measurement may have been interrupted. Stand still throughout the measurement."
+    }
+  }
+}

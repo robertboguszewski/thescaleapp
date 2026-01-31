@@ -1,0 +1,97 @@
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "confirm": "Confirm",
+    "close": "Close",
+    "clear": "Clear",
+    "reset": "Reset",
+    "search": "Search",
+    "stopSearch": "Stop",
+    "newMeasurement": "New measurement",
+    "newProfile": "New profile",
+    "createProfile": "Create profile",
+    "saveChanges": "Save changes",
+    "saveConfig": "Save configuration",
+    "retry": "Try again",
+    "dismiss": "Dismiss",
+    "more": "More",
+    "connect": "Connect",
+    "configure": "Configure"
+  },
+  "status": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "configured": "Configured",
+    "notConfigured": "Not configured"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "daysAgo_one": "{{count}} day ago",
+    "weeksAgo": "{{count}} weeks ago",
+    "weeksAgo_one": "{{count}} week ago",
+    "monthsAgo": "{{count}} months ago",
+    "monthsAgo_one": "{{count}} month ago"
+  },
+  "units": {
+    "kg": "kg",
+    "cm": "cm",
+    "percent": "%",
+    "years": "years",
+    "years_one": "year",
+    "seconds": "seconds",
+    "seconds_one": "second"
+  },
+  "form": {
+    "select": "Select...",
+    "required": "Required",
+    "optional": "optional"
+  },
+  "gender": {
+    "male": "Male",
+    "female": "Female",
+    "maleShort": "M",
+    "femaleShort": "F"
+  },
+  "ethnicity": {
+    "asian": "Asian",
+    "nonAsian": "Other"
+  },
+  "months": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "auto": "Auto"
+  },
+  "profile": {
+    "create": "Create profile",
+    "select": "Select profile",
+    "default": "default",
+    "new": "New profile"
+  },
+  "errors": {
+    "unknown": "Unknown error",
+    "electronApiUnavailable": "Electron API unavailable"
+  }
+}

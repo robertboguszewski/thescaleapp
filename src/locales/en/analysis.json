@@ -1,0 +1,108 @@
+{
+  "title": "Analysis",
+  "generatedAt": "Report generated: {{date}}",
+  "healthScore": {
+    "title": "Body Score",
+    "excellent": "Excellent - Outstanding!",
+    "veryGood": "Very Good - Keep it up!",
+    "good": "Good - On the right track",
+    "fair": "Fair - Room for improvement",
+    "poor": "Needs improvement"
+  },
+  "metrics": {
+    "bodyFat": "Body Fat",
+    "visceral": "Visceral",
+    "muscle": "Muscle",
+    "leanMass": "Lean Mass"
+  },
+  "bodyComposition": {
+    "title": "Body Composition"
+  },
+  "metabolic": {
+    "title": "Metabolic Health",
+    "bmr": "Basal Metabolic Rate",
+    "bmrDescription": "Calories your body burns at rest",
+    "visceralFat": "Visceral Fat Level",
+    "bmi": "Body Mass Index",
+    "scale": "Scale",
+    "target": "Target",
+    "bmiCategories": {
+      "underweight": "Underweight",
+      "normal": "Normal",
+      "overweight": "Overweight",
+      "obese": "Obese"
+    },
+    "visceralCategories": {
+      "healthy": "Healthy",
+      "elevated": "Elevated",
+      "high": "High"
+    }
+  },
+  "trends": {
+    "title": "Progress",
+    "period": "Last {{days}} days",
+    "improving": "Improving",
+    "stable": "Stable",
+    "declining": "Declining",
+    "metrics": {
+      "weight": "Weight",
+      "bodyFat": "Body Fat",
+      "muscleMass": "Muscle Mass",
+      "bodyScore": "Body Score"
+    },
+    "overall": {
+      "improving": "Overall: Improving",
+      "improvingMessage": "Great progress! Keep up the good work.",
+      "stable": "Overall: Stable",
+      "stableMessage": "Maintaining current levels.",
+      "declining": "Overall: Declining",
+      "decliningMessage": "Consider reviewing your diet and exercise routine."
+    },
+    "measurementCount": "Based on {{count}} measurements"
+  },
+  "risk": {
+    "title": "Risk Assessment",
+    "categories": {
+      "cardiovascular": "Cardiovascular",
+      "metabolic": "Metabolic Syndrome",
+      "sarcopenia": "Muscle Loss"
+    },
+    "levels": {
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High"
+    },
+    "primaryConcern": "Primary concern",
+    "allLow": "All risk levels are low - great job!",
+    "recommendations": {
+      "cardiovascular": "Consider: cardio exercise, reduce refined carbs, monitor blood pressure",
+      "metabolic": "Consider: balanced diet, regular exercise, weight management",
+      "sarcopenia": "Consider: resistance training, adequate protein intake (1.6g/kg)"
+    }
+  },
+  "recommendations": {
+    "title": "Personalized Recommendations",
+    "categories": {
+      "body_fat": "Body Fat",
+      "muscle": "Muscle Mass",
+      "visceral": "Visceral Fat",
+      "bmi": "BMI",
+      "hydration": "Hydration",
+      "general": "General"
+    },
+    "suggestedActions": "Suggested Actions",
+    "source": "Source",
+    "allGood": "All good!",
+    "allGoodMessage": "No recommendations. Keep up the great work!"
+  },
+  "empty": {
+    "noProfile": "No Profile Selected",
+    "noProfileMessage": "Select a profile from the header to view your health analysis.",
+    "noMeasurements": "No Measurements Yet",
+    "noMeasurementsMessage": "Take your first measurement to see detailed health analysis and personalized recommendations."
+  },
+  "error": {
+    "title": "Unable to Load Analysis",
+    "retry": "Try Again"
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "status": {
+    "disconnected": "Rozłączono",
+    "scanning": "Szukam wagi...",
+    "connecting": "Łączenie...",
+    "connected": "Połączono",
+    "reading": "Odczyt pomiaru...",
+    "error": "Błąd połączenia",
+    "configured": "Skonfigurowano",
+    "notConfigured": "Nie skonfigurowano"
+  },
+  "device": {
+    "noMacAddress": "Brak adresu MAC",
+    "searchDevices": "Szukaj urządzeń",
+    "stopScanning": "Zatrzymaj skanowanie",
+    "searchingDevices": "Szukam urządzeń Mi Scale...",
+    "foundDevices": "Znalezione urządzenia ({{count}})",
+    "deviceSelected": "Urządzenie wybrane",
+    "macAddress": "MAC: {{mac}}",
+    "clickToSearch": "Kliknij \"Szukaj urządzeń\" aby znaleźć wagę w pobliżu",
+    "connectedTo": "Połączono z wagą: {{deviceName}}",
+    "cancelled": "Anulowano",
+    "waitingForConfigured": "Czekam na skonfigurowaną wagę... Stań na wagę aby ją obudzić",
+    "scanning": "Skanowanie... Stań na wagę aby ją obudzić",
+    "foundScale": "Znaleziono wagę: {{deviceName}}",
+    "searchingMiScale": "Szukam wagi Mi Scale... Stań na wagę aby ją obudzić",
+    "searchingSaved": "Szukam zapisanej wagi... Stań na wagę aby ją obudzić"
+  },
+  "scan": {
+    "completed": "Skanowanie zakończone",
+    "foundCount": "Znaleziono {{count}} urządzeń",
+    "error": "Błąd skanowania"
+  },
+  "connection": {
+    "autoConnect": "Automatyczne łączenie",
+    "autoConnectDesc": "Automatycznie połącz z wagą przy uruchomieniu aplikacji",
+    "scanTimeout": "Limit czasu skanowania",
+    "scanTimeoutDesc": "Maksymalny czas szukania wagi"
+  },
+  "notifications": {
+    "measurementSaved": {
+      "title": "Pomiar zapisany",
+      "message": "{{weight}} kg - {{profileName}}"
+    },
+    "newMeasurement": {
+      "title": "Nowy pomiar",
+      "message": "{{weight}} kg - Wybierz profil aby zapisać"
+    },
+    "connectionLost": {
+      "title": "Utracono połączenie",
+      "message": "Nie udało się połączyć. Wstań na wagę i kliknij \"Spróbuj ponownie\".",
+      "retryButton": "Spróbuj ponownie"
+    },
+    "connected": {
+      "title": "Połączono z wagą",
+      "message": "{{deviceName}} - stań na wagę aby wykonać pomiar"
+    },
+    "autoConnected": {
+      "title": "Automatycznie połączono!",
+      "message": "{{deviceName}} - nasłuchiwanie aktywne"
+    },
+    "selectionCancelled": {
+      "title": "Anulowano wybór urządzenia",
+      "message": "Wskazówka: Wstań na wagę aby ją obudzić, potem spróbuj ponownie. Waga powinna pojawić się na liście."
+    },
+    "bluetoothError": {
+      "title": "Błąd Bluetooth",
+      "message": "Sprawdź czy Bluetooth jest włączony w Ustawieniach systemu."
+    },
+    "connectionError": {
+      "title": "Błąd połączenia"
+    },
+    "scaleConfigured": {
+      "title": "Waga skonfigurowana",
+      "message": "Kliknij \"Aktywuj nasłuchiwanie\" aby połączyć"
+    },
+    "autoListeningActive": {
+      "title": "Automatyczne nasłuchiwanie aktywne",
+      "message": "Wstań na wagę - połączenie nastąpi automatycznie"
+    },
+    "scanning": {
+      "title": "Skanowanie...",
+      "message": "Stań na wagę aby ją obudzić"
+    },
+    "scanTimeout": {
+      "title": "Czas skanowania minął",
+      "message": "Waga nie została znaleziona. Spróbuj ponownie - upewnij się, że stoisz na wadze."
+    }
+  },
+  "states": {
+    "disconnected": {
+      "title": "Rozłączono",
+      "description": "Waga nie jest połączona. Naciśnij \"Połącz\" aby rozpocząć.",
+      "action": "Połącz"
+    },
+    "scanning": {
+      "title": "Szukam wagi...",
+      "description": "Upewnij się, że waga jest włączona i w zasięgu Bluetooth."
+    },
+    "connecting": {
+      "title": "Łączenie...",
+      "description": "Nawiązuję połączenie z wagą. To może potrwać kilka sekund."
+    },
+    "connected": {
+      "title": "Połączono",
+      "description": "Waga jest gotowa. Wejdź na wagę aby rozpocząć pomiar.",
+      "action": "Rozpocznij pomiar"
+    },
+    "reading": {
+      "title": "Pomiar w toku...",
+      "description": "Stój nieruchomo. Czekam na stabilizację wagi."
+    },
+    "error": {
+      "title": "Błąd",
+      "description": "Wystąpił problem z połączeniem.",
+      "action": "Spróbuj ponownie"
+    }
+  },
+  "errors": {
+    "BLUETOOTH_OFF": {
+      "message": "Bluetooth jest wyłączony",
+      "suggestion": "Włącz Bluetooth w Ustawieniach systemu (Command + Spacja, wpisz \"Bluetooth\")"
+    },
+    "DEVICE_NOT_FOUND": {
+      "message": "Nie znaleziono wagi Xiaomi S400",
+      "suggestion": "Upewnij się, że:\n  - Waga jest włączona (postaw na niej nogę)\n  - Jesteś w zasięgu (< 5 metrów)\n  - Aplikacja Xiaomi Home jest zamknięta"
+    },
+    "CONNECTION_TIMEOUT": {
+      "message": "Przekroczono czas połączenia (30s)",
+      "suggestion": "Spróbuj:\n  - Wyłączyć i włączyć Bluetooth\n  - Podejść bliżej do wagi\n  - Usunąć przeszkody między urządzeniami"
+    },
+    "READ_FAILED": {
+      "message": "Nie udało się odczytać danych z wagi",
+      "suggestion": "Waga mogła się rozłączyć. Spróbuj ponownie wykonać pomiar."
+    },
+    "DECRYPTION_FAILED": {
+      "message": "Błąd deszyfrowania danych",
+      "suggestion": "Klucz BLE może być nieprawidłowy. Sprawdź konfigurację w Ustawieniach lub wyeksportuj klucz ponownie z Xiaomi Cloud."
+    },
+    "INVALID_DATA": {
+      "message": "Otrzymano nieprawidłowe dane",
+      "suggestion": "Pomiar mógł zostać przerwany. Stój spokojnie przez cały czas pomiaru."
+    }
+  }
+}

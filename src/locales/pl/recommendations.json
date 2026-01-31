@@ -1,0 +1,155 @@
+{
+  "smart": {
+    "createProfile": {
+      "title": "Utwórz profil",
+      "description": "Profil jest wymagany do zapisywania i analizowania pomiarów"
+    },
+    "connectScale": {
+      "title": "Połącz wagę",
+      "description": "Skonfiguruj połączenie z wagą Xiaomi aby automatyzować pomiary"
+    },
+    "firstMeasurement": {
+      "title": "Wykonaj pierwszy pomiar",
+      "description": "Rozpocznij śledzenie parametrów ciała wykonując pierwszy pomiar",
+      "action": "Wykonaj pomiar"
+    },
+    "timeForMeasurement": {
+      "title": "Czas na pomiar",
+      "description": "Ostatni pomiar był {{days}} dni temu. Regularne pomiary pomagają śledzić postępy",
+      "action": "Wykonaj pomiar"
+    },
+    "considerMeasurement": {
+      "title": "Rozważ pomiar",
+      "description": "Minęło {{days}} dni od ostatniego pomiaru",
+      "action": "Wykonaj pomiar"
+    },
+    "bmiUnderweight": {
+      "title": "BMI poniżej normy",
+      "description": "Twoje BMI wskazuje na niedowagę. Rozważ konsultację ze specjalistą"
+    },
+    "bmiHighlyElevated": {
+      "title": "BMI znacznie podwyższone",
+      "description": "Twoje BMI wskazuje na otyłość. Rozważ konsultację ze specjalistą"
+    },
+    "bmiSlightlyElevated": {
+      "title": "BMI lekko podwyższone",
+      "description": "Twoje BMI wskazuje na nadwagę. Rozważ zwiększenie aktywności fizycznej"
+    },
+    "visceralFatElevated": {
+      "title": "Podwyższony tłuszcz trzewny",
+      "description": "Poziom tłuszczu trzewnego jest podwyższony. Może to wpływać na Twoje zdrowie"
+    },
+    "greatRegularity": {
+      "title": "Świetna regularność!",
+      "description": "Utrzymujesz regularne pomiary. To klucz do śledzenia postępów"
+    },
+    "checkTrends": {
+      "title": "Sprawdź swoje trendy",
+      "description": "Masz {{count}} pomiarów. Zobacz jak zmieniają się Twoje parametry",
+      "action": "Zobacz trendy"
+    }
+  },
+  "health": {
+    "underweight": {
+      "title": "Niedowaga",
+      "message": "Twoje BMI wskazuje na niedowagę, co może zwiększać ryzyko niedoborów żywieniowych.",
+      "actions": [
+        "Zwiększ spożycie kalorii o 300-500 kcal/dzień",
+        "Skup się na wysokobiałkowych posiłkach",
+        "Rozważ konsultację z dietetykiem"
+      ]
+    },
+    "obesity": {
+      "title": "Otyłość",
+      "message": "Twoje BMI wskazuje na otyłość, co zwiększa ryzyko chorób sercowo-naczyniowych.",
+      "actions": [
+        "Wprowadź deficyt kaloryczny 500-750 kcal/dzień",
+        "Zwiększ aktywność fizyczną do minimum 150 min/tydzień",
+        "Rozważ konsultację z lekarzem"
+      ]
+    },
+    "elevatedBodyFat": {
+      "title": "Podwyższony poziom tkanki tłuszczowej",
+      "message": "Twój poziom tkanki tłuszczowej jest powyżej zalecanego zakresu.",
+      "actions": [
+        "Zwiększ aktywność fizyczną, w tym cardio",
+        "Ogranicz przetworzoną żywność i cukry proste",
+        "Zadbaj o odpowiednią ilość białka w diecie"
+      ]
+    },
+    "highVisceralFat": {
+      "title": "Wysoki tłuszcz trzewny",
+      "message": "Wysoki poziom tłuszczu trzewnego znacząco zwiększa ryzyko cukrzycy i chorób serca.",
+      "actions": [
+        "Priorytet: redukcja obwodu talii",
+        "Wprowadź trening HIIT 2-3x w tygodniu",
+        "Ogranicz alkohol i stres",
+        "Rozważ konsultację medyczną"
+      ]
+    },
+    "elevatedVisceralFat": {
+      "title": "Podwyższony tłuszcz trzewny",
+      "message": "Twój poziom tłuszczu trzewnego jest lekko podwyższony.",
+      "actions": [
+        "Zwiększ aktywność fizyczną",
+        "Ogranicz alkohol",
+        "Monitoruj regularnie"
+      ]
+    },
+    "lowMuscleMass": {
+      "title": "Niska masa mięśniowa",
+      "message": "Zwiększenie masy mięśniowej poprawi metabolizm i zdrowie ogólne.",
+      "actions": [
+        "Wprowadź trening siłowy 2-3x w tygodniu",
+        "Zwiększ spożycie białka do 1.6-2.2g/kg masy ciała",
+        "Zadbaj o regenerację (7-9h snu)"
+      ]
+    },
+    "possibleDehydration": {
+      "title": "Możliwe odwodnienie",
+      "message": "Twój poziom wody w organizmie może być niewystarczający.",
+      "actions": [
+        "Pij minimum 2-3 litry wody dziennie",
+        "Ogranicz kofeina i alkohol",
+        "Wykonuj pomiar rano dla dokładniejszych wyników"
+      ]
+    },
+    "goodCondition": {
+      "title": "Dobra kondycja!",
+      "message": "Twoje parametry są w zdrowych zakresach. Kontynuuj obecny styl życia.",
+      "actions": [
+        "Utrzymuj regularną aktywność fizyczną",
+        "Kontynuuj zbilansowaną dietę",
+        "Wykonuj pomiary regularnie dla monitoringu"
+      ]
+    },
+    "tips": {
+      "morningMeasurement": "Wykonuj pomiar rano dla dokładniejszych wyników",
+      "regularMeasurements": "Wykonuj pomiary regularnie dla monitoringu",
+      "defaultRecommendation": "Wykonuj regularne pomiary, aby śledzić postępy."
+    },
+    "profileMatching": {
+      "newProfileNoHistory": "Nowy profil bez historii pomiarów",
+      "weightNoMatch": "Waga nie pasuje do żadnego profilu",
+      "ambiguous": "Waga pasuje do wielu profili - wybierz użytkownika",
+      "matchedByWeight": "Dopasowano na podstawie wagi",
+      "invalidWeight": "Nieprawidłowa wartość wagi"
+    },
+    "report": {
+      "regularMeasurements": "Wykonuj regularne pomiary, aby śledzić postępy.",
+      "excellent": "Świetne wyniki! Tracisz tkankę tłuszczową i budujesz mięśnie.",
+      "goodProgress": "Dobry postęp w redukcji wagi. Utrzymuj tempo.",
+      "improving": "Twoje parametry poprawiają się. Kontynuuj obecny plan.",
+      "fatIncrease": "Wzrost tkanki tłuszczowej. Rozważ zwiększenie aktywności fizycznej.",
+      "muscleLoss": "Spadek masy mięśniowej. Zwiększ spożycie białka i trening siłowy.",
+      "needsAttention": "Niektóre parametry wymagają uwagi. Przejrzyj rekomendacje.",
+      "stable": "Parametry stabilne. Kontynuuj zdrowe nawyki."
+    }
+  },
+  "setup": {
+    "takeMeasurement": {
+      "label": "Wykonaj pomiar",
+      "description": "Wykonaj pierwszy pomiar masy ciała"
+    }
+  }
+}

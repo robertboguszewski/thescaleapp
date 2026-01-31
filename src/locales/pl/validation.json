@@ -1,0 +1,27 @@
+{
+  "profile": {
+    "name": {
+      "required": "Nazwa profilu jest wymagana",
+      "maxLength": "Nazwa profilu nie może mieć więcej niż {{max}} znaków"
+    },
+    "gender": {
+      "required": "Płeć jest wymagana"
+    },
+    "age": {
+      "range": "Wiek musi być w zakresie {{min}}-{{max}} lat"
+    },
+    "height": {
+      "range": "Wzrost musi być w zakresie {{min}}-{{max}} cm"
+    }
+  },
+  "device": {
+    "mac": {
+      "invalid": "Nieprawidłowy adres MAC",
+      "format": "Format: XX:XX:XX:XX:XX:XX"
+    },
+    "bleKey": {
+      "invalid": "Nieprawidłowy klucz BLE",
+      "length": "Klucz musi mieć 24 lub 32 znaki szesnastkowe"
+    }
+  }
+}

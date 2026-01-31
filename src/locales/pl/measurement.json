@@ -1,0 +1,124 @@
+{
+  "panel": {
+    "instructions": {
+      "title": "Jak wykonać pomiar",
+      "subtitle": "Postępuj zgodnie z instrukcjami",
+      "step1": {
+        "title": "Połącz wagę",
+        "description": "Upewnij się, że waga jest włączona i kliknij 'Połącz'"
+      },
+      "step2": {
+        "title": "Wejdź na wagę",
+        "description": "Stój nieruchomo aż waga ustabilizuje pomiar"
+      },
+      "step3": {
+        "title": "Zapisz pomiar",
+        "description": "Sprawdź i zapisz wyniki"
+      },
+      "step4": {
+        "title": "Czekaj na wynik",
+        "description": "Stój nieruchomo aż waga ustabilizuje pomiar"
+      }
+    },
+    "status": {
+      "connected": "Połączono z:",
+      "ready": "Wejdź na wagę - pomiar zostanie wykonany automatycznie",
+      "manual": "Ręczny pomiar",
+      "profile": "Profil:",
+      "autoDetection": "(automatyczne wykrywanie)",
+      "stayOnScale": "Nie schodź z wagi",
+      "savedToHistory": "Wyniki zostały zapisane do historii."
+    },
+    "firstTime": {
+      "title": "Skonfiguruj wagę",
+      "description": "Aplikacja zapamięta urządzenie i będzie automatycznie nasłuchiwać pomiarów.",
+      "instructions": "Przejdź do <strong>Ustawienia → Urządzenie</strong> i zaloguj się do Xiaomi Cloud, aby automatycznie pobrać klucz BLE.",
+      "goToSettings": "Przejdź do ustawień"
+    },
+    "reconnect": {
+      "connecting": "Łączenie...",
+      "ready": "Waga gotowa do połączenia",
+      "configured": "Twoja waga Mi Scale jest skonfigurowana. Kliknij poniżej aby aktywować nasłuchiwanie pomiarów.",
+      "notConfigured": "Twoja waga Mi Scale nie jest jeszcze skonfigurowana. Kliknij poniżej aby połączyć.",
+      "selectDevice": "Wybierz wagę z listy urządzeń Bluetooth...",
+      "beforeClick": "Przed kliknięciem:",
+      "beforeClickHint": "Wstań na wagę aby ją obudzić, potem kliknij \"Aktywuj nasłuchiwanie\"",
+      "activateListening": "Aktywuj nasłuchiwanie"
+    },
+    "noProfile": {
+      "title": "Brak profilu",
+      "description": "Utwórz profil użytkownika, aby móc zapisywać i analizować wyniki pomiarów, lub kontynuuj jako gość.",
+      "continueAsGuest": "Kontynuuj jako gość",
+      "createProfile": "Utwórz profil"
+    },
+    "ambiguous": {
+      "message": "Wykryto niejednoznaczny pomiar. Wybierz, do którego profilu przypisać wynik.",
+      "selectProfile": "Wybierz profil"
+    },
+    "guestSaved": {
+      "title": "Zapisano jako gość",
+      "message": "Możesz przypisać pomiar do profilu później w \"Pomiary gości\""
+    },
+    "saved": {
+      "title": "Pomiar zapisany",
+      "guestMessage": "Wyniki zostały zapisane jako pomiar gościa."
+    },
+    "listening": {
+      "active": "Nasłuchiwanie aktywne",
+      "noConfiguredScale": "Brak skonfigurowanej wagi",
+      "goToSettings": "Przejdź do Ustawień > Urządzenie aby skonfigurować wagę"
+    },
+    "error": {
+      "connection": "Błąd połączenia",
+      "unknown": "Nieznany błąd"
+    }
+  },
+  "common": {
+    "guest": "Gość"
+  },
+  "result": {
+    "title": "Pomiar zakończony",
+    "weight": "Waga",
+    "saved": "Pomiar zapisany",
+    "stable": "Waga ustabilizowana",
+    "stabilizing": "Czekam na stabilizację...",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
+    "discard": "Odrzuć",
+    "viewDetails": "Zobacz szczegóły",
+    "viewHistory": "Zobacz historię",
+    "new": "Nowy pomiar",
+    "overallScore": "Wynik ogólny",
+    "sections": {
+      "basic": "Podstawowe",
+      "bodyComposition": "Skład ciała",
+      "additional": "Dodatkowe"
+    },
+    "metrics": {
+      "impedance": "Impedancja",
+      "heartRate": "Tętno",
+      "bodyFat": "Tkanka tłuszczowa",
+      "muscleMass": "Masa mięśniowa",
+      "bodyWater": "Woda w organizmie",
+      "leanBodyMass": "Masa beztłuszczowa",
+      "visceralFat": "Tłuszcz trzewny",
+      "bmr": "BMR",
+      "boneMass": "Masa kostna",
+      "protein": "Białko"
+    }
+  },
+  "quick": {
+    "title": "Szybki pomiar",
+    "stabilized": "Pomiar ustabilizowany",
+    "stabilizing": "Stabilizacja...",
+    "saved": "Zapisano",
+    "disconnected": "Waga rozłączona",
+    "connect": "Połącz z wagą",
+    "connecting": "Łączenie z wagą...",
+    "ready": "Gotowe do pomiaru",
+    "new": "Nowy pomiar",
+    "saved_notification": {
+      "title": "Pomiar zapisany"
+    }
+  }
+}

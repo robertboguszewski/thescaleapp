@@ -1,0 +1,124 @@
+{
+  "panel": {
+    "instructions": {
+      "title": "How to take a measurement",
+      "subtitle": "Follow the instructions",
+      "step1": {
+        "title": "Connect scale",
+        "description": "Make sure the scale is turned on and click 'Connect'"
+      },
+      "step2": {
+        "title": "Step on scale",
+        "description": "Stand still until the scale stabilizes the measurement"
+      },
+      "step3": {
+        "title": "Save measurement",
+        "description": "Review and save your results"
+      },
+      "step4": {
+        "title": "Wait for result",
+        "description": "Stand still until the scale stabilizes the measurement"
+      }
+    },
+    "status": {
+      "connected": "Connected to:",
+      "ready": "Step on the scale - measurement will be taken automatically",
+      "manual": "Manual measurement",
+      "profile": "Profile:",
+      "autoDetection": "(automatic detection)",
+      "stayOnScale": "Don't step off the scale",
+      "savedToHistory": "Results have been saved to history."
+    },
+    "firstTime": {
+      "title": "Configure scale",
+      "description": "The app will remember the device and automatically listen for measurements.",
+      "instructions": "Go to <strong>Settings → Device</strong> and log in to Xiaomi Cloud to automatically download the BLE key.",
+      "goToSettings": "Go to settings"
+    },
+    "reconnect": {
+      "connecting": "Connecting...",
+      "ready": "Scale ready to connect",
+      "configured": "Your Mi Scale is configured. Click below to activate measurement listening.",
+      "notConfigured": "Your Mi Scale is not configured yet. Click below to connect.",
+      "selectDevice": "Select scale from the Bluetooth device list...",
+      "beforeClick": "Before clicking:",
+      "beforeClickHint": "Step on the scale to wake it up, then click \"Activate listening\"",
+      "activateListening": "Activate listening"
+    },
+    "noProfile": {
+      "title": "No profile",
+      "description": "Create a user profile to save and analyze measurement results, or continue as guest.",
+      "continueAsGuest": "Continue as guest",
+      "createProfile": "Create profile"
+    },
+    "ambiguous": {
+      "message": "Ambiguous measurement detected. Select which profile to assign the result to.",
+      "selectProfile": "Select profile"
+    },
+    "guestSaved": {
+      "title": "Saved as guest",
+      "message": "You can assign the measurement to a profile later in \"Guest measurements\""
+    },
+    "saved": {
+      "title": "Measurement saved",
+      "guestMessage": "Results have been saved as a guest measurement."
+    },
+    "listening": {
+      "active": "Listening active",
+      "noConfiguredScale": "No configured scale",
+      "goToSettings": "Go to Settings > Device to configure the scale"
+    },
+    "error": {
+      "connection": "Connection error",
+      "unknown": "Unknown error"
+    }
+  },
+  "common": {
+    "guest": "Guest"
+  },
+  "result": {
+    "title": "Measurement completed",
+    "weight": "Weight",
+    "saved": "Measurement saved",
+    "stable": "Weight stabilized",
+    "stabilizing": "Waiting for stabilization...",
+    "save": "Save",
+    "saving": "Saving...",
+    "discard": "Discard",
+    "viewDetails": "View details",
+    "viewHistory": "View history",
+    "new": "New measurement",
+    "overallScore": "Overall score",
+    "sections": {
+      "basic": "Basic",
+      "bodyComposition": "Body composition",
+      "additional": "Additional"
+    },
+    "metrics": {
+      "impedance": "Impedance",
+      "heartRate": "Heart rate",
+      "bodyFat": "Body fat",
+      "muscleMass": "Muscle mass",
+      "bodyWater": "Body water",
+      "leanBodyMass": "Lean body mass",
+      "visceralFat": "Visceral fat",
+      "bmr": "BMR",
+      "boneMass": "Bone mass",
+      "protein": "Protein"
+    }
+  },
+  "quick": {
+    "title": "Quick measurement",
+    "stabilized": "Measurement stabilized",
+    "stabilizing": "Stabilizing...",
+    "saved": "Saved",
+    "disconnected": "Scale disconnected",
+    "connect": "Connect to scale",
+    "connecting": "Connecting to scale...",
+    "ready": "Ready to measure",
+    "new": "New measurement",
+    "saved_notification": {
+      "title": "Measurement saved"
+    }
+  }
+}

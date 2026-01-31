@@ -1,0 +1,35 @@
+{
+  "sidebar": {
+    "dashboard": "Pulpit",
+    "measure": "Pomiar",
+    "history": "Historia",
+    "trends": "Trendy",
+    "analysis": "Analiza",
+    "settings": "Ustawienia"
+  },
+  "tabs": {
+    "dashboard": "Pulpit",
+    "measure": "Nowy pomiar",
+    "history": "Historia pomiarów",
+    "trends": "Trendy",
+    "analysis": "Analiza",
+    "settings": "Ustawienia"
+  },
+  "sections": {
+    "unassigned": "Nieprzypisane",
+    "guestMeasurements": "Pomiary gości"
+  },
+  "actions": {
+    "expand": "Rozwiń",
+    "collapse": "Zwiń"
+  },
+  "header": {
+    "configureScale": "Konfiguruj wagę",
+    "selectProfile": "Wybierz profil",
+    "createProfile": "Utwórz profil",
+    "newProfile": "Nowy profil",
+    "defaultIndicator": "(domyślny)",
+    "lightMode": "Tryb jasny",
+    "darkMode": "Tryb ciemny"
+  }
+}

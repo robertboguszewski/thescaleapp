@@ -1,0 +1,155 @@
+{
+  "smart": {
+    "createProfile": {
+      "title": "Create profile",
+      "description": "Profile is required for saving and analyzing measurements"
+    },
+    "connectScale": {
+      "title": "Connect scale",
+      "description": "Configure connection with Xiaomi scale to automate measurements"
+    },
+    "firstMeasurement": {
+      "title": "Take first measurement",
+      "description": "Start tracking body parameters by taking your first measurement",
+      "action": "Take measurement"
+    },
+    "timeForMeasurement": {
+      "title": "Time for measurement",
+      "description": "Last measurement was {{days}} days ago. Regular measurements help track progress",
+      "action": "Take measurement"
+    },
+    "considerMeasurement": {
+      "title": "Consider measurement",
+      "description": "{{days}} days have passed since last measurement",
+      "action": "Take measurement"
+    },
+    "bmiUnderweight": {
+      "title": "BMI below normal",
+      "description": "Your BMI indicates underweight. Consider consulting a specialist"
+    },
+    "bmiHighlyElevated": {
+      "title": "BMI significantly elevated",
+      "description": "Your BMI indicates obesity. Consider consulting a specialist"
+    },
+    "bmiSlightlyElevated": {
+      "title": "BMI slightly elevated",
+      "description": "Your BMI indicates overweight. Consider increasing physical activity"
+    },
+    "visceralFatElevated": {
+      "title": "Elevated visceral fat",
+      "description": "Visceral fat level is elevated. This may affect your health"
+    },
+    "greatRegularity": {
+      "title": "Great regularity!",
+      "description": "You maintain regular measurements. This is key to tracking progress"
+    },
+    "checkTrends": {
+      "title": "Check your trends",
+      "description": "You have {{count}} measurements. See how your parameters are changing",
+      "action": "View trends"
+    }
+  },
+  "health": {
+    "underweight": {
+      "title": "Underweight",
+      "message": "Your BMI indicates underweight, which may increase the risk of nutritional deficiencies.",
+      "actions": [
+        "Increase calorie intake by 300-500 kcal/day",
+        "Focus on high-protein meals",
+        "Consider consulting a dietitian"
+      ]
+    },
+    "obesity": {
+      "title": "Obesity",
+      "message": "Your BMI indicates obesity, which increases the risk of cardiovascular disease.",
+      "actions": [
+        "Create a calorie deficit of 500-750 kcal/day",
+        "Increase physical activity to at least 150 min/week",
+        "Consider consulting a doctor"
+      ]
+    },
+    "elevatedBodyFat": {
+      "title": "Elevated body fat level",
+      "message": "Your body fat level is above the recommended range.",
+      "actions": [
+        "Increase physical activity, including cardio",
+        "Limit processed foods and simple sugars",
+        "Ensure adequate protein in your diet"
+      ]
+    },
+    "highVisceralFat": {
+      "title": "High visceral fat",
+      "message": "High visceral fat level significantly increases the risk of diabetes and heart disease.",
+      "actions": [
+        "Priority: reduce waist circumference",
+        "Introduce HIIT training 2-3x per week",
+        "Limit alcohol and stress",
+        "Consider medical consultation"
+      ]
+    },
+    "elevatedVisceralFat": {
+      "title": "Elevated visceral fat",
+      "message": "Your visceral fat level is slightly elevated.",
+      "actions": [
+        "Increase physical activity",
+        "Limit alcohol",
+        "Monitor regularly"
+      ]
+    },
+    "lowMuscleMass": {
+      "title": "Low muscle mass",
+      "message": "Increasing muscle mass will improve metabolism and overall health.",
+      "actions": [
+        "Introduce strength training 2-3x per week",
+        "Increase protein intake to 1.6-2.2g/kg body weight",
+        "Ensure proper recovery (7-9 hours of sleep)"
+      ]
+    },
+    "possibleDehydration": {
+      "title": "Possible dehydration",
+      "message": "Your body water level may be insufficient.",
+      "actions": [
+        "Drink at least 2-3 liters of water daily",
+        "Limit caffeine and alcohol",
+        "Take measurements in the morning for more accurate results"
+      ]
+    },
+    "goodCondition": {
+      "title": "Good condition!",
+      "message": "Your parameters are in healthy ranges. Continue your current lifestyle.",
+      "actions": [
+        "Maintain regular physical activity",
+        "Continue a balanced diet",
+        "Take regular measurements for monitoring"
+      ]
+    },
+    "tips": {
+      "morningMeasurement": "Take measurements in the morning for more accurate results",
+      "regularMeasurements": "Take measurements regularly for monitoring",
+      "defaultRecommendation": "Take regular measurements to track progress."
+    },
+    "profileMatching": {
+      "newProfileNoHistory": "New profile without measurement history",
+      "weightNoMatch": "Weight does not match any profile",
+      "ambiguous": "Weight matches multiple profiles - select user",
+      "matchedByWeight": "Matched based on weight",
+      "invalidWeight": "Invalid weight value"
+    },
+    "report": {
+      "regularMeasurements": "Take regular measurements to track progress.",
+      "excellent": "Excellent results! You are losing fat and building muscle.",
+      "goodProgress": "Good weight loss progress. Keep up the pace.",
+      "improving": "Your parameters are improving. Continue your current plan.",
+      "fatIncrease": "Body fat increase. Consider increasing physical activity.",
+      "muscleLoss": "Muscle mass loss. Increase protein intake and strength training.",
+      "needsAttention": "Some parameters need attention. Review recommendations.",
+      "stable": "Parameters are stable. Continue healthy habits."
+    }
+  },
+  "setup": {
+    "takeMeasurement": {
+      "label": "Take measurement",
+      "description": "Take your first body weight measurement"
+    }
+  }
+}

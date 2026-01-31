@@ -1,0 +1,44 @@
+{
+  "title": "Measurement history",
+  "totalMeasurements": "Total: {{count}} measurements",
+  "pagination": "Page {{current}} of {{total}} ({{count}} measurements)",
+  "empty": {
+    "title": "No measurements",
+    "description": "You don't have any saved measurements yet. Take your first measurement to start tracking your results.",
+    "action": "Take measurement"
+  },
+  "delete": {
+    "confirm": "Delete measurement?",
+    "warning": "This action is irreversible. The measurement will be permanently deleted from history.",
+    "success": "Measurement deleted",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "row": {
+    "weight": "Weight",
+    "delete": "Delete measurement"
+  },
+  "metrics": {
+    "leanMass": "Lean mass"
+  },
+  "guest": {
+    "title": "Guest measurements",
+    "subtitle": "{{count}} unassigned measurements",
+    "empty": {
+      "title": "No guest measurements",
+      "description": "Measurements saved as guest will appear here"
+    },
+    "assign": {
+      "title": "Assign measurement to profile",
+      "message": "Select a profile to assign this measurement to.",
+      "success": "Measurement assigned",
+      "successMessage": "Measurement has been assigned to profile {{profileName}}",
+      "error": "Assignment error",
+      "errorMessage": "Failed to assign measurement to profile"
+    },
+    "deleteError": {
+      "title": "Delete error",
+      "message": "Failed to delete measurement"
+    }
+  }
+}

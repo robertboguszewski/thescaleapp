@@ -1,0 +1,108 @@
+{
+  "title": "Analiza",
+  "generatedAt": "Raport wygenerowany: {{date}}",
+  "healthScore": {
+    "title": "Wynik ciała",
+    "excellent": "Doskonały - Wspaniale!",
+    "veryGood": "Bardzo dobry - Tak trzymaj!",
+    "good": "Dobry - Na dobrej drodze",
+    "fair": "Przeciętny - Jest miejsce na poprawę",
+    "poor": "Wymaga poprawy"
+  },
+  "metrics": {
+    "bodyFat": "Tkanka tłuszczowa",
+    "visceral": "Trzewna",
+    "muscle": "Mięśnie",
+    "leanMass": "Masa beztłuszczowa"
+  },
+  "bodyComposition": {
+    "title": "Skład ciała"
+  },
+  "metabolic": {
+    "title": "Zdrowie metaboliczne",
+    "bmr": "Podstawowa przemiana materii",
+    "bmrDescription": "Kalorie spalane przez organizm w spoczynku",
+    "visceralFat": "Poziom tłuszczu trzewnego",
+    "bmi": "Wskaźnik masy ciała",
+    "scale": "Skala",
+    "target": "Cel",
+    "bmiCategories": {
+      "underweight": "Niedowaga",
+      "normal": "Norma",
+      "overweight": "Nadwaga",
+      "obese": "Otyłość"
+    },
+    "visceralCategories": {
+      "healthy": "Zdrowy",
+      "elevated": "Podwyższony",
+      "high": "Wysoki"
+    }
+  },
+  "trends": {
+    "title": "Postępy",
+    "period": "Ostatnie {{days}} dni",
+    "improving": "Poprawa",
+    "stable": "Stabilnie",
+    "declining": "Pogorszenie",
+    "metrics": {
+      "weight": "Waga",
+      "bodyFat": "Tkanka tłuszczowa",
+      "muscleMass": "Masa mięśniowa",
+      "bodyScore": "Wynik ciała"
+    },
+    "overall": {
+      "improving": "Ogólnie: Poprawa",
+      "improvingMessage": "Świetne postępy! Tak trzymaj.",
+      "stable": "Ogólnie: Stabilnie",
+      "stableMessage": "Utrzymujesz obecny poziom.",
+      "declining": "Ogólnie: Pogorszenie",
+      "decliningMessage": "Rozważ przegląd diety i planu ćwiczeń."
+    },
+    "measurementCount": "Na podstawie {{count}} pomiarów"
+  },
+  "risk": {
+    "title": "Ocena ryzyka",
+    "categories": {
+      "cardiovascular": "Sercowo-naczyniowe",
+      "metabolic": "Zespół metaboliczny",
+      "sarcopenia": "Utrata mięśni"
+    },
+    "levels": {
+      "low": "Niskie",
+      "moderate": "Umiarkowane",
+      "high": "Wysokie"
+    },
+    "primaryConcern": "Główny problem",
+    "allLow": "Wszystkie poziomy ryzyka są niskie - świetna robota!",
+    "recommendations": {
+      "cardiovascular": "Rozważ: ćwiczenia cardio, ogranicz rafinowane węglowodany, monitoruj ciśnienie krwi",
+      "metabolic": "Rozważ: zrównoważoną dietę, regularne ćwiczenia, kontrolę wagi",
+      "sarcopenia": "Rozważ: trening siłowy, odpowiednią podaż białka (1.6g/kg)"
+    }
+  },
+  "recommendations": {
+    "title": "Spersonalizowane rekomendacje",
+    "categories": {
+      "body_fat": "Tkanka tłuszczowa",
+      "muscle": "Masa mięśniowa",
+      "visceral": "Tłuszcz trzewny",
+      "bmi": "BMI",
+      "hydration": "Nawodnienie",
+      "general": "Ogólne"
+    },
+    "suggestedActions": "Sugerowane działania",
+    "source": "Źródło",
+    "allGood": "Wszystko w porządku!",
+    "allGoodMessage": "Brak rekomendacji. Tak trzymaj!"
+  },
+  "empty": {
+    "noProfile": "Nie wybrano profilu",
+    "noProfileMessage": "Wybierz profil z nagłówka, aby zobaczyć analizę zdrowotną.",
+    "noMeasurements": "Brak pomiarów",
+    "noMeasurementsMessage": "Wykonaj pierwszy pomiar, aby zobaczyć szczegółową analizę zdrowotną i spersonalizowane rekomendacje."
+  },
+  "error": {
+    "title": "Nie można załadować analizy",
+    "retry": "Spróbuj ponownie"
+  }
+}

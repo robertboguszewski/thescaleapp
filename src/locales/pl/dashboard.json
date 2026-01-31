@@ -1,0 +1,125 @@
+{
+  "title": "Pulpit",
+  "setupIncomplete": "Masz zapisane pomiary, ale dokończ konfigurację aby korzystać z pełnych funkcji.",
+  "metrics": {
+    "weight": "Waga",
+    "bmi": "BMI",
+    "bodyFat": "Tkanka tłuszczowa",
+    "visceralFat": "Tłuszcz trzewny",
+    "muscleMass": "Masa mięśniowa",
+    "boneMass": "Masa kostna",
+    "water": "Woda",
+    "protein": "Białko",
+    "metabolism": "Metabolizm",
+    "bodyAge": "Wiek metaboliczny",
+    "bodyScore": "Punktacja ciała"
+  },
+  "trends": {
+    "stable": "Stabilny",
+    "up": "Wzrost",
+    "down": "Spadek"
+  },
+  "status": {
+    "good": "Dobry",
+    "warning": "Uwaga",
+    "critical": "Krytyczny",
+    "neutral": "Neutralny"
+  },
+  "quickActions": {
+    "title": "Szybkie akcje",
+    "newMeasurement": "Nowy pomiar",
+    "newMeasurementDesc": "Wykonaj pomiar masy ciała",
+    "viewHistory": "Historia",
+    "viewHistoryDesc": "Przeglądaj poprzednie pomiary",
+    "viewTrends": "Trendy",
+    "viewTrendsDesc": "Analizuj zmiany w czasie",
+    "settings": "Ustawienia",
+    "settingsDesc": "Konfiguruj aplikację"
+  },
+  "recommendations": {
+    "title": "Rekomendacje",
+    "subtitle": "Na podstawie Twoich danych",
+    "noData": "Wykonaj pomiar, aby otrzymać spersonalizowane zalecenia.",
+    "allGood": "Wszystko w porządku!",
+    "allGoodMessage": "Brak rekomendacji. Kontynuuj tak dalej!"
+  },
+  "activity": {
+    "title": "Ostatnia aktywność",
+    "noMeasurements": "Brak pomiarów",
+    "noActivities": "Brak ostatniej aktywności",
+    "measurementAdded": "Dodano pomiar",
+    "profileCreated": "Utworzono profil",
+    "measurement": "Pomiar",
+    "profile": "Profil",
+    "noProfile": "bez profilu"
+  },
+  "weeklyTrend": {
+    "title": "Trend tygodniowy",
+    "noData": "Za mało danych do wyświetlenia trendu",
+    "measureToSee": "Wykonaj pomiar, aby zobaczyć trend",
+    "measurementsThisWeek": "{{count}} pomiar w tym tygodniu",
+    "measurementsThisWeek_plural": "{{count}} pomiary/pomiarów w tym tygodniu"
+  },
+  "bodyScore": {
+    "title": "Punktacja ciała",
+    "excellent": "Doskonały",
+    "good": "Dobry",
+    "average": "Przeciętny",
+    "needsImprovement": "Do poprawy",
+    "description": "Wynik ogólny składu ciała"
+  },
+  "setup": {
+    "title": "Konfiguracja",
+    "setupGuideSubtitle": "Wykonaj poniższe kroki aby rozpocząć korzystanie z aplikacji",
+    "step1": "Skonfiguruj wagę",
+    "step1Desc": "Połącz się z wagą Xiaomi Mi Scale",
+    "step2": "Utwórz profil",
+    "step2Desc": "Dodaj swój profil użytkownika",
+    "step3": "Wykonaj pomiar",
+    "step3Desc": "Wejdź na wagę i wykonaj pierwszy pomiar",
+    "complete": "Konfiguracja zakończona!",
+    "completeDesc": "Twoja waga jest gotowa do użycia.",
+    "configProgress": "Postęp konfiguracji",
+    "startButton": "Rozpocznij",
+    "configureButton": "Konfiguruj",
+    "measureButton": "Wykonaj pomiar",
+    "nextButton": "Przejdź",
+    "editButton": "Edytuj"
+  },
+  "statusOverview": {
+    "title": "Status",
+    "currentWeight": "Aktualna waga",
+    "lastMeasurement": "Ostatni pomiar",
+    "noData": "Brak danych",
+    "device": "Urządzenie",
+    "profile": "Profil",
+    "notConfigured": "Nie skonfigurowano",
+    "time": {
+      "justNow": "przed chwilą",
+      "minutesAgo": "{{count}} min temu",
+      "hoursAgo": "{{count}} godz. temu",
+      "weeksAgo": "{{count}} tydz. temu",
+      "weeksAgo_plural": "{{count}} tyg. temu"
+    }
+  },
+  "trendsChart": {
+    "noData": "Za mało danych do wyświetlenia",
+    "noDataDescription": "Wykonaj kilka pomiarów, aby zobaczyć trendy i analizę zmian w czasie.",
+    "takeMeasurement": "Wykonaj pomiar",
+    "measurements": "{{count}} pomiar",
+    "measurements_plural": "{{count}} pomiary/pomiarow",
+    "minimum": "Minimum",
+    "maximum": "Maksimum",
+    "average": "Średnia",
+    "change": "Zmiana",
+    "allMetrics": "Wszystkie metryki",
+    "lastMeasurement": "Ostatni pomiar"
+  },
+  "dateRange": {
+    "days7": "7 dni",
+    "days30": "30 dni",
+    "months3": "3 miesiące",
+    "year": "Rok",
+    "all": "Wszystko"
+  }
+}
