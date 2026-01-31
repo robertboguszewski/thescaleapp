@@ -32,6 +32,8 @@ interface BLEState {
 
   // Real-time measurement data
   liveWeight: number | null;
+  liveHeartRate: number | null;
+  liveImpedance: number | null;
   isStable: boolean;
 
   // Measurement data (centralized - for BLEService)
@@ -55,6 +57,8 @@ interface BLEState {
   clearDeviceConfig: () => void;
 
   setLiveWeight: (weight: number | null) => void;
+  setLiveHeartRate: (heartRate: number | null) => void;
+  setLiveImpedance: (impedance: number | null) => void;
   setIsStable: (stable: boolean) => void;
 
   setIsScanning: (scanning: boolean) => void;
@@ -85,6 +89,8 @@ const initialState = {
   bleKey: null,
   deviceName: null,
   liveWeight: null,
+  liveHeartRate: null,
+  liveImpedance: null,
   isStable: false,
   // Centralized measurement state
   lastMeasurement: null as RawMeasurement | null,
@@ -118,7 +124,7 @@ export const useBLEStore = create<BLEState>()(
 
         // Clear live weight when disconnected
         if (connectionState === 'disconnected') {
-          set({ liveWeight: null, isStable: false });
+          set({ liveWeight: null, liveHeartRate: null, liveImpedance: null, isStable: false });
         }
       },
 
@@ -139,6 +145,10 @@ export const useBLEStore = create<BLEState>()(
         }),
 
       setLiveWeight: (liveWeight) => set({ liveWeight }),
+
+      setLiveHeartRate: (liveHeartRate) => set({ liveHeartRate }),
+
+      setLiveImpedance: (liveImpedance) => set({ liveImpedance }),
 
       setIsStable: (isStable) => set({ isStable }),
 

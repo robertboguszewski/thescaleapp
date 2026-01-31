@@ -20,11 +20,18 @@ interface NativeBLEDevice {
 }
 
 /**
- * Native BLE measurement interface
+ * Native BLE measurement interface (all fields from scanner)
  */
 interface NativeBLEMeasurement {
   weightKg: number;
   impedanceOhm?: number;
+  impedanceLowOhm?: number;
+  heartRateBpm?: number;
+  profileId?: number;
+  timestamp?: string;
+  isStabilized?: boolean;
+  isImpedanceMeasurement?: boolean;
+  isHeartRateMeasurement?: boolean;
 }
 
 /**
@@ -199,18 +206,34 @@ export class BLEService {
    * Handle measurement event
    */
   private handleMeasurement(measurement: NativeBLEMeasurement): void {
-    console.log('[BLEService] Measurement received:', measurement);
+    console.log('[BLEService] Measurement received:', measurement.weightKg, 'kg, HR:', measurement.heartRateBpm);
 
     const store = useBLEStore.getState();
 
-    // Use store's handleMeasurement which includes debouncing and validation
-    const accepted = store.handleMeasurement({
-      weightKg: measurement.weightKg,
-      impedanceOhm: measurement.impedanceOhm,
-    });
+    // Receiving measurements means we're connected (for advertisement-based scales)
+    if (store.connectionState !== 'connected' && store.connectionState !== 'reading') {
+      console.log('[BLEService] Setting connection state to connected (measurement received)');
+      store.setConnectionState('connected');
+    }
 
-    if (accepted) {
-      console.log('[BLEService] Measurement accepted:', measurement.weightKg, 'kg');
+    // Always update live measurement data for real-time display (no debounce)
+    store.setLiveWeight(measurement.weightKg);
+    store.setLiveHeartRate(measurement.heartRateBpm ?? null);
+    store.setLiveImpedance(measurement.impedanceOhm ?? null);
+    store.setIsStable(measurement.isStabilized ?? false);
+
+    // For stable/final measurements, use handleMeasurement (with debounce)
+    if (measurement.isStabilized) {
+      const accepted = store.handleMeasurement({
+        weightKg: measurement.weightKg,
+        impedanceOhm: measurement.impedanceOhm,
+        impedanceLowOhm: measurement.impedanceLowOhm,
+        heartRateBpm: measurement.heartRateBpm,
+      });
+
+      if (accepted) {
+        console.log('[BLEService] Stable measurement accepted:', measurement.weightKg, 'kg, HR:', measurement.heartRateBpm);
+      }
     }
   }
 
