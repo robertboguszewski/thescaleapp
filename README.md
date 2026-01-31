@@ -20,6 +20,104 @@ Desktop application for Xiaomi Mi Body Composition Scale S400 that enables weigh
 - **Health Reports**: Generate comprehensive health reports with trends
 - **Device Discovery**: Auto-scan for nearby Mi Scale devices
 
+## Screenshots
+
+### Dashboard
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/dashboard-overview.png" alt="Dashboard Overview" width="100%"/>
+      <br/><em>Quick metrics, body score, and weekly trend</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/dashboard-recommendations.png" alt="Dashboard Recommendations" width="100%"/>
+      <br/><em>Health recommendations and recent activity</em>
+    </td>
+  </tr>
+</table>
+
+### Measurement
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/images/measurement-ready.png" alt="Measurement Ready" width="60%"/>
+      <br/><em>BLE connected and ready to measure</em>
+    </td>
+  </tr>
+</table>
+
+### History
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/images/history-details.png" alt="Measurement History" width="70%"/>
+      <br/><em>Measurement history with expandable details</em>
+    </td>
+  </tr>
+</table>
+
+### Trends
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/images/trends-weight.png" alt="Weight Trends" width="100%"/>
+      <br/><em>Weight over time</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/trends-bmr.png" alt="BMR Trends" width="100%"/>
+      <br/><em>Basal metabolic rate</em>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/trends-body-score.png" alt="Body Score Trends" width="100%"/>
+      <br/><em>Body score with all metrics</em>
+    </td>
+  </tr>
+</table>
+
+### Analysis
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/analysis-body-composition.png" alt="Body Composition" width="100%"/>
+      <br/><em>Body score and composition breakdown</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/analysis-health-risks.png" alt="Health Risks" width="100%"/>
+      <br/><em>Metabolic health and risk assessment</em>
+    </td>
+  </tr>
+</table>
+
+### Settings
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/settings-profiles.png" alt="User Profiles" width="100%"/>
+      <br/><em>Multiple user profiles</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/settings-device.png" alt="Device Settings" width="100%"/>
+      <br/><em>Device discovery and BLE key extraction</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/images/settings-appearance-light.png" alt="Light Theme" width="100%"/>
+      <br/><em>Light theme</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/images/settings-appearance-dark.png" alt="Dark Theme" width="100%"/>
+      <br/><em>Dark theme</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="docs/images/settings-about.png" alt="About" width="50%"/>
+      <br/><em>About page with version info</em>
+    </td>
+  </tr>
+</table>
+
 ## Tech Stack
 
 - **Electron** - Cross-platform desktop framework
