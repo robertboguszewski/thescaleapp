@@ -223,6 +223,8 @@ export class BleakBLEAdapter extends EventEmitter implements IBLEAdapter {
           if (this.config.autoConnect && !this.connectedDeviceId) {
             if (!this.config.deviceMac || message.device.id.toLowerCase() === this.config.deviceMac?.toLowerCase()) {
               this.handleConnection(message.device.id, message.device.name);
+              // Stop scanning once we've connected to the scale
+              this.stopScanning().catch(console.error);
             }
           }
         }
