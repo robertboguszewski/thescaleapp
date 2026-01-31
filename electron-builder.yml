@@ -1,0 +1,74 @@
+# Electron Builder Configuration
+# https://www.electron.build/configuration/configuration
+
+appId: com.thescale.app
+productName: TheScale App
+copyright: Copyright © 2024-2025 TheScale
+
+# Directories
+directories:
+  buildResources: build
+  output: release
+
+# Files to include
+files:
+  - dist/**/*
+  - package.json
+
+# macOS Configuration
+mac:
+  category: public.app-category.healthcare-fitness
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  # Extend Info.plist with Bluetooth usage description
+  extendInfo:
+    NSBluetoothAlwaysUsageDescription: "TheScale App wymaga dostępu do Bluetooth, aby łączyć się z wagą Xiaomi Mi Scale i odczytywać pomiary."
+    NSBluetoothPeripheralUsageDescription: "TheScale App wymaga dostępu do Bluetooth, aby łączyć się z wagą Xiaomi Mi Scale i odczytywać pomiary."
+
+dmg:
+  artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+# Windows Configuration (future)
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+# Linux Configuration (future)
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Utility
+  artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
+# Native modules rebuild
+electronRebuild:
+  onlyModules:
+    - "@abandonware/noble"

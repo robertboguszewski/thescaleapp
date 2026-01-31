@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Moja Aplikacja Electron</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    .version {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Witaj w Electron!</h1>
+    <p>Twoja pierwsza aplikacja desktop na macOS</p>
+    <div class="version">
+      Node: <span id="node-version"></span> |
+      Chrome: <span id="chrome-version"></span> |
+      Electron: <span id="electron-version"></span>
+    </div>
+  </div>
+  <script>
+    document.getElementById('node-version').textContent = process.versions.node
+    document.getElementById('chrome-version').textContent = process.versions.chrome
+    document.getElementById('electron-version').textContent = process.versions.electron
+  </script>
+</body>
+</html>

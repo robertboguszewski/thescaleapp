@@ -1,0 +1,10 @@
+{
+  "id": "67974ac6-0bc6-4dda-99fe-ed684982efb3",
+  "name": "Robert",
+  "gender": "male",
+  "birthYear": 1996,
+  "heightCm": 175,
+  "isDefault": true,
+  "createdAt": "2026-01-31T13:49:08.103Z",
+  "updatedAt": "2026-01-31T13:54:16.351Z"
+}
