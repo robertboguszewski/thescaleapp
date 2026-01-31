@@ -82,13 +82,14 @@ export interface IBLEAdapter {
  * Mi Scale device name patterns
  */
 export const MI_SCALE_PATTERNS = [
-  /^MIBFS/i,      // Mi Body Fat Scale
-  /^MIBCS/i,      // Mi Body Composition Scale
-  /^XMTZC/i,      // Xiaomi Mi Scale (Chinese)
-  /^MI_?SCALE/i,  // MI SCALE or MI_SCALE
-  /mi\s*scale/i,  // Mi Scale (with optional space)
-  /body.*scale/i, // Body Scale variants
-  /xiaomi/i,      // Xiaomi branded
+  /^MIBFS/i,           // Mi Body Fat Scale
+  /^MIBCS/i,           // Mi Body Composition Scale
+  /^XMTZC/i,           // Xiaomi Mi Scale (Chinese)
+  /^MI_?SCALE/i,       // MI SCALE or MI_SCALE
+  /mi\s*scale/i,       // Mi Scale (with optional space)
+  /body.*scale/i,      // Body Scale variants
+  /xiaomi.*scale/i,    // Xiaomi Scale (e.g., "Xiaomi Scale S400")
+  /scale.*s400/i,      // S400 model
 ];
 
 /**
@@ -110,4 +111,40 @@ export const BLE_UUIDS = {
 export function isMiScaleDevice(deviceName: string | null | undefined): boolean {
   if (!deviceName) return false;
   return MI_SCALE_PATTERNS.some(pattern => pattern.test(deviceName));
+}
+
+/**
+ * Map short BLE advertisement names to full device names
+ * BLE advertisement packets are limited to 31 bytes, so devices use short names
+ */
+const DEVICE_NAME_MAP: Record<string, string> = {
+  'MIBFS': 'Mi Body Fat Scale',
+  'MIBCS': 'Mi Body Composition Scale',
+  'MIBCS2': 'Mi Body Composition Scale 2',
+  'XMTZC01HM': 'Xiaomi Mi Scale',
+  'XMTZC02HM': 'Xiaomi Mi Scale 2',
+  'XMTZC04HM': 'Mi Body Composition Scale',
+  'XMTZC05HM': 'Mi Body Composition Scale 2',
+};
+
+/**
+ * Get the full device name from BLE advertisement name
+ * Returns the original name if no mapping exists
+ */
+export function getFullDeviceName(bleName: string | null | undefined): string {
+  if (!bleName) return 'Mi Scale';
+
+  // Check exact match first
+  const exactMatch = DEVICE_NAME_MAP[bleName.toUpperCase()];
+  if (exactMatch) return exactMatch;
+
+  // Check prefix match (e.g., "MIBFS_1234" -> "Mi Body Fat Scale")
+  for (const [prefix, fullName] of Object.entries(DEVICE_NAME_MAP)) {
+    if (bleName.toUpperCase().startsWith(prefix)) {
+      return fullName;
+    }
+  }
+
+  // Return original name if no mapping found
+  return bleName;
 }

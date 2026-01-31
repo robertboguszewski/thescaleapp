@@ -18,7 +18,7 @@ import {
   getBackupService,
   getAppConfigStoreInstance,
 } from './services';
-import { NobleBLEAdapter } from './ble/NobleBLEAdapter';
+import { BleakBLEAdapter } from './ble/BleakBLEAdapter';
 import type {
   IpcResponse,
   IpcError,
@@ -472,17 +472,19 @@ export function registerIpcHandlers(): void {
 }
 
 // ====== Native BLE Adapter Instance ======
-let nobleBLEAdapter: NobleBLEAdapter | null = null;
+// Using BleakBLEAdapter (Python bleak) instead of NobleBLEAdapter
+// because noble's XPC bindings don't work on macOS Sequoia
+let bleAdapter: BleakBLEAdapter | null = null;
 
 /**
  * Get or create the Native BLE adapter instance
  */
-function getNobleBLEAdapter(): NobleBLEAdapter {
-  if (!nobleBLEAdapter) {
+function getBLEAdapter(): BleakBLEAdapter {
+  if (!bleAdapter) {
     const configStore = getAppConfigStoreInstance();
     const bleConfig = configStore.getBLEConfig();
 
-    nobleBLEAdapter = new NobleBLEAdapter({
+    bleAdapter = new BleakBLEAdapter({
       deviceMac: bleConfig.deviceMac || null,
       autoConnect: bleConfig.autoConnect ?? true,
       scanInterval: 5000,
@@ -490,9 +492,9 @@ function getNobleBLEAdapter(): NobleBLEAdapter {
       allowDuplicates: true,
     });
 
-    console.log('[NativeBLE] Adapter initialized');
+    console.log('[NativeBLE] BleakBLEAdapter initialized (using Python bleak)');
   }
-  return nobleBLEAdapter;
+  return bleAdapter;
 }
 
 /**
@@ -505,7 +507,7 @@ export function registerNativeBLEHandlers(): void {
   ipcMain.handle(
     IpcChannels.NATIVE_BLE_START_SCANNING,
     wrapHandler(async (): Promise<void> => {
-      const adapter = getNobleBLEAdapter();
+      const adapter = getBLEAdapter();
       await adapter.startScanning();
     })
   );
@@ -513,7 +515,7 @@ export function registerNativeBLEHandlers(): void {
   ipcMain.handle(
     IpcChannels.NATIVE_BLE_STOP_SCANNING,
     wrapHandler(async (): Promise<void> => {
-      const adapter = getNobleBLEAdapter();
+      const adapter = getBLEAdapter();
       await adapter.stopScanning();
     })
   );
@@ -521,7 +523,7 @@ export function registerNativeBLEHandlers(): void {
   ipcMain.handle(
     IpcChannels.NATIVE_BLE_DISCONNECT,
     wrapHandler(async (): Promise<void> => {
-      const adapter = getNobleBLEAdapter();
+      const adapter = getBLEAdapter();
       await adapter.disconnect();
     })
   );
@@ -529,7 +531,7 @@ export function registerNativeBLEHandlers(): void {
   ipcMain.handle(
     IpcChannels.NATIVE_BLE_SET_DEVICE,
     wrapHandler(async (_event, mac: string): Promise<void> => {
-      const adapter = getNobleBLEAdapter();
+      const adapter = getBLEAdapter();
       adapter.setDeviceMac(mac);
 
       // Also save to config
@@ -550,7 +552,7 @@ export function registerNativeBLEHandlers(): void {
       device: { id: string; name: string } | null;
       state: string;
     }> => {
-      const adapter = getNobleBLEAdapter();
+      const adapter = getBLEAdapter();
       return {
         isConnected: adapter.isConnected(),
         isScanning: adapter.getState() === 'scanning',
@@ -568,7 +570,7 @@ export function registerNativeBLEHandlers(): void {
  * Call this after creating the main window
  */
 export function setupNativeBLEEventForwarding(mainWindow: BrowserWindow): () => void {
-  const adapter = getNobleBLEAdapter();
+  const adapter = getBLEAdapter();
 
   // Forward measurement events
   const measurementHandler = (measurement: { weightKg: number; impedanceOhm?: number; timestamp?: Date }) => {
@@ -651,7 +653,7 @@ export function setupNativeBLEEventForwarding(mainWindow: BrowserWindow): () => 
     // Disconnect and cleanup adapter
     adapter.disconnect().catch(console.error);
     adapter.removeAllListeners();
-    nobleBLEAdapter = null;
+    bleAdapter = null;
   };
 }
 

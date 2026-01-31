@@ -22,4 +22,4 @@ export {
 } from './services';
 
 // IPC handlers
-export { registerIpcHandlers, setupBLEEventForwarding } from './ipc-handlers';
+export { registerIpcHandlers, registerNativeBLEHandlers, setupBLEEventForwarding, setupNativeBLEEventForwarding } from './ipc-handlers';

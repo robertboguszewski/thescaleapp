@@ -10,7 +10,7 @@
 import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import path from 'path';
 import { initializeServices, areServicesInitialized, getAppConfigStoreInstance } from './services';
-import { registerIpcHandlers, setupBLEEventForwarding } from './ipc-handlers';
+import { registerIpcHandlers, registerNativeBLEHandlers, setupBLEEventForwarding, setupNativeBLEEventForwarding } from './ipc-handlers';
 
 /**
  * Persistent Bluetooth device permissions
@@ -47,9 +47,10 @@ let cleanupBLEEvents: (() => void) | null = null;
 
 /**
  * Check if the app is running in development mode
+ * Only use dev server when explicitly set via NODE_ENV
  */
 function isDevelopment(): boolean {
-  return process.env.NODE_ENV === 'development' || !app.isPackaged;
+  return process.env.NODE_ENV === 'development';
 }
 
 /**
@@ -182,8 +183,11 @@ function createWindow(): void {
     }
   });
 
-  // Setup BLE event forwarding
+  // Setup BLE event forwarding (old system - for backwards compatibility)
   cleanupBLEEvents = setupBLEEventForwarding(mainWindow);
+
+  // Setup Native BLE event forwarding (new system - nativeBLE IPC)
+  const cleanupNativeBLE = setupNativeBLEEventForwarding(mainWindow);
 
   // Handle external link clicks
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -200,6 +204,11 @@ function createWindow(): void {
     if (cleanupBLEEvents) {
       cleanupBLEEvents();
       cleanupBLEEvents = null;
+    }
+
+    // Cleanup Native BLE event listeners
+    if (cleanupNativeBLE) {
+      cleanupNativeBLE();
     }
 
     // Dereference the window object
@@ -284,6 +293,7 @@ async function initialize(): Promise<void> {
 
   // Register IPC handlers
   registerIpcHandlers();
+  registerNativeBLEHandlers();
 
   // Create the main window
   createWindow();

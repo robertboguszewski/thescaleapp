@@ -16,6 +16,7 @@ import {
   type IBLEAdapter,
   BLE_UUIDS,
   isMiScaleDevice,
+  getFullDeviceName,
 } from './BLETypes';
 import { MiScaleParser } from './MiScaleParser';
 
@@ -28,14 +29,32 @@ export interface INoble extends EventEmitter {
   stopScanningAsync(): Promise<void>;
 }
 
-// Import noble dynamically to allow mocking in tests
-let defaultNoble: INoble | null = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const nobleModule = require('@abandonware/noble');
-  defaultNoble = nobleModule.default || nobleModule;
-} catch (e) {
-  console.warn('[NobleBLEAdapter] Noble not available');
+// Noble is loaded lazily to avoid initialization issues with Electron
+// Using @stoprocent/noble which has better macOS support via official CoreBluetooth bindings
+let nobleModule: INoble | null = null;
+let nobleLoadAttempted = false;
+
+/**
+ * Lazily load noble module
+ * This prevents noble from initializing before Electron is ready
+ */
+function getNoble(): INoble | null {
+  if (nobleLoadAttempted) {
+    return nobleModule;
+  }
+  nobleLoadAttempted = true;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const noble = require('@stoprocent/noble');
+    nobleModule = noble.default || noble;
+    console.log('[NobleBLEAdapter] Loaded @stoprocent/noble for BLE');
+  } catch (e) {
+    console.warn('[NobleBLEAdapter] Noble not available:', e);
+    nobleModule = null;
+  }
+
+  return nobleModule;
 }
 
 /**
@@ -72,7 +91,8 @@ export class NobleBLEAdapter extends EventEmitter implements IBLEAdapter {
     super();
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.parser = new MiScaleParser();
-    this.noble = noble !== undefined ? noble : defaultNoble;
+    // Use provided noble instance or lazily load it
+    this.noble = noble !== undefined ? noble : getNoble();
     this.setupNobleEvents();
   }
 
@@ -106,18 +126,27 @@ export class NobleBLEAdapter extends EventEmitter implements IBLEAdapter {
    * Handle discovered peripheral
    */
   private handleDiscover(peripheral: any): void {
-    const { localName, manufacturerData } = peripheral.advertisement;
+    const { localName, manufacturerData, serviceUuids } = peripheral.advertisement;
+
+    // Log ALL discovered devices for debugging
+    console.log('[NobleBLEAdapter] Device found:', {
+      id: peripheral.id,
+      name: localName || '(no name)',
+      rssi: peripheral.rssi,
+      services: serviceUuids || [],
+    });
 
     // Check if this is a Mi Scale
     if (!isMiScaleDevice(localName)) {
       return;
     }
 
-    console.log('[NobleBLEAdapter] Mi Scale found:', localName, peripheral.id);
+    const fullName = getFullDeviceName(localName);
+    console.log('[NobleBLEAdapter] Mi Scale found:', localName, '->', fullName, peripheral.id);
 
     const device: BLEDevice = {
       id: peripheral.id,
-      name: localName || 'Mi Scale',
+      name: fullName,
       rssi: peripheral.rssi,
     };
 
@@ -172,7 +201,7 @@ export class NobleBLEAdapter extends EventEmitter implements IBLEAdapter {
       console.log('[NobleBLEAdapter] Connected!');
       this.emit('connected', {
         id: peripheral.id,
-        name: peripheral.advertisement.localName || 'Mi Scale',
+        name: getFullDeviceName(peripheral.advertisement.localName),
       });
 
       // Setup disconnect handler
@@ -264,9 +293,10 @@ export class NobleBLEAdapter extends EventEmitter implements IBLEAdapter {
     this.state = 'scanning';
     this.emit('scanning');
 
-    // Scan for Body Composition and Weight Scale services
+    // Scan for ALL devices (empty array = no UUID filter)
+    // Mi Scale may not advertise standard service UUIDs, so we filter by name instead
     await this.noble.startScanningAsync(
-      [BLE_UUIDS.BODY_COMPOSITION_SERVICE, BLE_UUIDS.WEIGHT_SCALE_SERVICE],
+      [], // No UUID filter - scan all devices
       this.config.allowDuplicates
     );
   }
@@ -325,7 +355,7 @@ export class NobleBLEAdapter extends EventEmitter implements IBLEAdapter {
 
     return {
       id: this.connectedPeripheral.id,
-      name: this.connectedPeripheral.advertisement?.localName || 'Unknown',
+      name: getFullDeviceName(this.connectedPeripheral.advertisement?.localName),
     };
   }
 
