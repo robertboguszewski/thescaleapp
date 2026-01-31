@@ -74,7 +74,7 @@ const TrendIndicator: React.FC<{
     up: {
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M7 17l5-5 5 5M7 7l5 5 5-5" />
+          <path d="M12 19V5M5 12l7-7 7 7" />
         </svg>
       ),
       color: 'text-green-500 dark:text-green-400',
@@ -83,7 +83,7 @@ const TrendIndicator: React.FC<{
     down: {
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M7 7l5 5 5-5M7 17l5-5 5 5" />
+          <path d="M12 5v14M5 12l7 7 7-7" />
         </svg>
       ),
       color: 'text-red-500 dark:text-red-400',
@@ -103,9 +103,9 @@ const TrendIndicator: React.FC<{
   const config = trendConfig[direction];
 
   return (
-    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${config.bgColor}`}>
+    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full whitespace-nowrap ${config.bgColor}`}>
       <span className={config.color}>{config.icon}</span>
-      {value && (
+      {value && value !== '0' && (
         <span className={`text-xs font-medium ${config.color}`}>{value}</span>
       )}
     </div>

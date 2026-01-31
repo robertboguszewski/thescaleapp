@@ -37,17 +37,17 @@ const BreakdownBar: React.FC<{
   const percentage = Math.min((value / maxValue) * 100, 100);
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-12 text-xs text-gray-500 dark:text-gray-400 truncate">
+    <div className="flex items-center gap-2">
+      <span className="w-16 shrink-0 text-xs text-gray-500 dark:text-gray-400 truncate">
         {label}
       </span>
-      <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="flex-1 min-w-0 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="w-8 text-xs text-gray-600 dark:text-gray-300 text-right">
+      <span className="w-8 shrink-0 text-xs text-gray-600 dark:text-gray-300 text-right">
         {value.toFixed(0)}
       </span>
     </div>
@@ -120,36 +120,36 @@ export const HealthScoreCard: React.FC<HealthScoreCardProps> = ({
   const statusColorClass = getStatusColor(status);
 
   return (
-    <Card className={`${className}`} padding="lg">
-      <div className="flex flex-col lg:flex-row items-center gap-6">
+    <Card className={`${className} h-full`} padding="lg">
+      <div className="flex flex-col items-center gap-4">
         {/* Gauge */}
         <div className="flex-shrink-0">
-          <BodyScoreGauge score={score} size={160} strokeWidth={10} showLabels={false} />
+          <BodyScoreGauge score={score} size={140} strokeWidth={10} showLabels={false} />
         </div>
 
         {/* Score info and breakdown */}
-        <div className="flex-1 text-center lg:text-left">
+        <div className="flex-1 min-w-0 w-full text-center">
           {/* Title and status */}
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
             {t('healthScore.title')}
           </h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {score}
-            <span className="text-lg text-gray-400 ml-1">/100</span>
+            <span className="text-base text-gray-400 ml-1">/100</span>
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {t(`healthScore.${statusMessage}`)}
           </p>
 
           {/* Trend status */}
-          <div className={`flex items-center gap-1 mt-2 justify-center lg:justify-start ${statusColorClass}`}>
+          <div className={`flex items-center gap-1 mt-2 justify-center ${statusColorClass}`}>
             <StatusIcon status={status} />
             <span className="text-sm font-medium">{t(`trends.${status}`)}</span>
           </div>
 
           {/* Breakdown bars */}
           {breakdown && (
-            <div className="mt-4 space-y-2 w-full max-w-xs mx-auto lg:mx-0">
+            <div className="mt-4 space-y-2 w-full">
               <BreakdownBar label="BMI" value={breakdown.bmi} />
               <BreakdownBar label={t('metrics.bodyFat')} value={breakdown.bodyFat} />
               <BreakdownBar label={t('metrics.visceral')} value={breakdown.visceral} maxValue={30} />

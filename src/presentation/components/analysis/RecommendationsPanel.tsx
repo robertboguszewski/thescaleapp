@@ -109,11 +109,28 @@ const CategoryIcon: React.FC<{
 /**
  * Single recommendation item
  */
+/**
+ * Helper to translate a value that may be a translation key or already translated
+ */
+const translateIfKey = (value: string, t: (key: string) => string): string => {
+  // If it looks like a translation key (contains ':' namespace separator), translate it
+  if (value.includes(':')) {
+    const translated = t(value);
+    // If translation returns the key itself (not found), return original
+    return translated === value || translated.startsWith('⚠️') ? value : translated;
+  }
+  return value;
+};
+
 const RecommendationItem: React.FC<{
   recommendation: HealthRecommendation;
 }> = ({ recommendation }) => {
-  const { t } = useTranslation('analysis');
+  const { t } = useTranslation(['analysis', 'recommendations']);
   const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Translate title and message if they are translation keys
+  const title = translateIfKey(recommendation.title, t);
+  const message = translateIfKey(recommendation.message, t);
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -131,10 +148,10 @@ const RecommendationItem: React.FC<{
               </span>
             </div>
             <h4 className="font-medium text-gray-900 dark:text-white">
-              {recommendation.title}
+              {title}
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-              {recommendation.message}
+              {message}
             </p>
           </div>
           <svg
@@ -170,7 +187,7 @@ const RecommendationItem: React.FC<{
                       >
                         <path d="M9 12l2 2 4-4" />
                       </svg>
-                      {action}
+                      {translateIfKey(action, t)}
                     </li>
                   ))}
                 </ul>
