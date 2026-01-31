@@ -701,8 +701,8 @@ describe('Integration: Report Generation', () => {
 
       const report = await reportService.generateReport(profile.id);
 
-      // Single measurement should encourage regular tracking
-      expect(report.summary.keyInsight).toContain('regularn');
+      // Single measurement should encourage regular tracking (returns translation key)
+      expect(report.summary.keyInsight).toContain('report.regularMeasurements');
     });
   });
 

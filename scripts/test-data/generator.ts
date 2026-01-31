@@ -2,8 +2,8 @@
 /**
  * Test Data Generator for Xiaomi Scale Measurements
  *
- * Generates realistic body composition data matching the project's interfaces.
- * Self-contained with all calculation logic to avoid module resolution issues.
+ * Generates realistic body composition data matching the project's storage schemas.
+ * Creates individual JSON files in the correct directories for the app to read.
  *
  * Usage:
  *   npm run test-data:generate    # Generate test data
@@ -13,12 +13,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ============================================
-// Interfaces (matching project's types)
+// Interfaces (matching project's storage schemas)
 // ============================================
 
 interface UserProfile {
@@ -47,29 +48,27 @@ interface CalculatedMetrics {
   bodyScore: number;
 }
 
-interface TestUserProfile {
-  id: string;
+/** Matches StoredUserProfileSchema in src/infrastructure/storage/schemas.ts */
+interface StoredProfile {
+  id: string; // UUID
   name: string;
   gender: 'male' | 'female';
   birthYear: number;
+  birthMonth?: number;
   heightCm: number;
-  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-  weightRange: [number, number];
-  createdAt: string;
+  ethnicity?: 'asian' | 'non-asian';
+  isDefault: boolean;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
 }
 
-interface ScaleMeasurement {
-  timestamp: string;
-  weightKg: number;
-  impedanceOhm: number;
-  metrics: CalculatedMetrics;
-}
-
-interface ScaleSession {
-  id: string;
-  userId: string;
-  measurement: ScaleMeasurement;
-  stabilized: boolean;
+/** Matches StoredMeasurementSchema in src/infrastructure/storage/schemas.ts */
+interface StoredMeasurement {
+  id: string; // UUID
+  timestamp: string; // ISO datetime
+  raw: RawMeasurement;
+  calculated: CalculatedMetrics;
+  userProfileId: string; // UUID
 }
 
 // ============================================
@@ -187,7 +186,7 @@ function calculateAllMetrics(profile: UserProfile, measurement: RawMeasurement):
     bmrKcal: Math.round(bmrKcal),
     leanBodyMassKg: round(leanBodyMassKg, 1),
     proteinPercent: round(proteinPercent, 1),
-    bodyScore: Math.round(bodyScore)
+    bodyScore: Math.round(bodyScore),
   };
 }
 
@@ -203,13 +202,16 @@ const CONFIG = {
   userName: 'Test User',
   birthYear: 1990,
   gender: 'male' as const,
-  activityLevel: 'moderate' as const
 };
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const OUTPUT_DIR = path.join(PROJECT_ROOT, 'test-data');
-const MEASUREMENTS_FILE = path.join(OUTPUT_DIR, 'measurements.json');
-const PROFILE_FILE = path.join(OUTPUT_DIR, 'user-profile.json');
+// App reads from ./data in development mode (see src/main/services.ts)
+const DATA_DIR = path.join(PROJECT_ROOT, 'data');
+const PROFILES_DIR = path.join(DATA_DIR, 'profiles');
+const MEASUREMENTS_DIR = path.join(DATA_DIR, 'measurements');
+
+// Keep track of generated profile ID for linking measurements
+let generatedProfileId: string = '';
 
 // ============================================
 // Utility Functions
@@ -233,20 +235,28 @@ function generateImpedance(bodyFatPercent: number): number {
   return Math.round(baseImpedance + variation);
 }
 
+function formatTimestampForFilename(date: Date): string {
+  return date.toISOString().replace(/:/g, '-');
+}
+
 // ============================================
 // Data Generation
 // ============================================
 
-function generateUserProfile(): TestUserProfile {
+function generateUserProfile(): StoredProfile {
+  const profileId = randomUUID();
+  generatedProfileId = profileId;
+  const now = new Date(CONFIG.startDate).toISOString();
+
   return {
-    id: 'test-user-001',
+    id: profileId,
     name: CONFIG.userName,
     gender: CONFIG.gender,
     birthYear: CONFIG.birthYear,
     heightCm: CONFIG.heightCm,
-    activityLevel: CONFIG.activityLevel,
-    weightRange: [100, 115],
-    createdAt: new Date(CONFIG.startDate).toISOString()
+    isDefault: true,
+    createdAt: now,
+    updatedAt: now,
   };
 }
 
@@ -254,39 +264,40 @@ function generateMeasurementForDay(
   date: Date,
   weight: number,
   userProfile: UserProfile
-): ScaleMeasurement {
+): StoredMeasurement {
   const estimatedBodyFat = 25 + (weight - 100) * 0.3;
   const impedance = generateImpedance(estimatedBodyFat);
 
   const rawMeasurement: RawMeasurement = {
-    weightKg: weight,
-    impedanceOhm: impedance
+    weightKg: Math.round(weight * 100) / 100,
+    impedanceOhm: impedance,
   };
 
   const metrics = calculateAllMetrics(userProfile, rawMeasurement);
 
-  const hour = 7 + Math.floor(Math.random() * 2);
+  const hour = 6 + Math.floor(Math.random() * 3);
   const minute = Math.floor(Math.random() * 60);
   const timestamp = new Date(date);
   timestamp.setHours(hour, minute, 0, 0);
 
   return {
+    id: randomUUID(),
     timestamp: timestamp.toISOString(),
-    weightKg: Math.round(weight * 100) / 100,
-    impedanceOhm: impedance,
-    metrics
+    raw: rawMeasurement,
+    calculated: metrics,
+    userProfileId: generatedProfileId,
   };
 }
 
-function generateAllMeasurements(): ScaleSession[] {
+function generateAllMeasurements(): StoredMeasurement[] {
   const totalDays = getDaysBetween(CONFIG.startDate, CONFIG.endDate);
   const weightChangePerDay = (CONFIG.startWeight - CONFIG.endWeight) / totalDays;
-  const sessions: ScaleSession[] = [];
+  const measurements: StoredMeasurement[] = [];
 
   const userProfile: UserProfile = {
     gender: CONFIG.gender,
     birthYear: CONFIG.birthYear,
-    heightCm: CONFIG.heightCm
+    heightCm: CONFIG.heightCm,
   };
 
   const age = calculateAge(CONFIG.birthYear);
@@ -303,18 +314,13 @@ function generateAllMeasurements(): ScaleSession[] {
     const date = addDays(CONFIG.startDate, day);
     const measurement = generateMeasurementForDay(date, weight, userProfile);
 
-    sessions.push({
-      id: `session-${String(day + 1).padStart(3, '0')}`,
-      userId: 'test-user-001',
-      measurement,
-      stabilized: true
-    });
+    measurements.push(measurement);
 
     process.stdout.write(`\r  Processing day ${day + 1}/${totalDays}...`);
   }
 
   console.log('\n');
-  return sessions;
+  return measurements;
 }
 
 // ============================================
@@ -330,7 +336,6 @@ function ensureDirectoryExists(dir: string): void {
 
 function saveJSON(filePath: string, data: unknown): void {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-  console.log(`  ✓ Saved: ${filePath}`);
 }
 
 function removeTestData(): void {
@@ -338,20 +343,54 @@ function removeTestData(): void {
   console.log('║     Xiaomi Scale Test Data Remover                    ║');
   console.log('╚══════════════════════════════════════════════════════╝\n');
 
-  if (fs.existsSync(OUTPUT_DIR)) {
-    console.log(`  Found test data directory: ${OUTPUT_DIR}`);
-    const files = fs.readdirSync(OUTPUT_DIR);
-    if (files.length > 0) {
-      console.log('\n  Contents to be removed:');
-      files.forEach((file) => console.log(`    - ${file}`));
-      files.forEach((file) => fs.unlinkSync(path.join(OUTPUT_DIR, file)));
-      console.log('\n  ✓ Test data removed successfully!\n');
-    } else {
-      console.log('  Directory is empty. Nothing to remove.\n');
+  let removedCount = 0;
+
+  // Remove profiles
+  if (fs.existsSync(PROFILES_DIR)) {
+    const files = fs.readdirSync(PROFILES_DIR).filter((f) => f.endsWith('.json'));
+    files.forEach((file) => {
+      const filePath = path.join(PROFILES_DIR, file);
+      try {
+        const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        // Only remove profiles named "Test User"
+        if (content.name === CONFIG.userName) {
+          fs.unlinkSync(filePath);
+          console.log(`  ✓ Removed profile: ${file}`);
+          removedCount++;
+        }
+      } catch {
+        // Skip invalid files
+      }
+    });
+  }
+
+  // Remove measurements linked to test user
+  if (fs.existsSync(MEASUREMENTS_DIR)) {
+    const files = fs.readdirSync(MEASUREMENTS_DIR).filter((f) => f.endsWith('.json'));
+    files.forEach((file) => {
+      const filePath = path.join(MEASUREMENTS_DIR, file);
+      try {
+        const content = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        // Check if this measurement belongs to a test profile
+        // We'll remove measurements from January 2026 as they're test data
+        const timestamp = new Date(content.timestamp);
+        if (timestamp >= new Date('2026-01-01') && timestamp <= new Date('2026-01-31')) {
+          fs.unlinkSync(filePath);
+          removedCount++;
+        }
+      } catch {
+        // Skip invalid files
+      }
+    });
+    if (removedCount > 0) {
+      console.log(`  ✓ Removed ${removedCount} test measurements`);
     }
+  }
+
+  if (removedCount === 0) {
+    console.log('  No test data found to remove.\n');
   } else {
-    console.log(`  No test data directory found at: ${OUTPUT_DIR}`);
-    console.log('  Nothing to remove.\n');
+    console.log(`\n  ✓ Removed ${removedCount} test data files.\n`);
   }
 }
 
@@ -367,27 +406,48 @@ function generateTestData(): void {
   console.log(`    End weight: ${CONFIG.endWeight}kg`);
   console.log(`    User: ${CONFIG.userName} (${CONFIG.gender}, born ${CONFIG.birthYear})`);
 
-  ensureDirectoryExists(OUTPUT_DIR);
+  // Ensure directories exist
+  ensureDirectoryExists(PROFILES_DIR);
+  ensureDirectoryExists(MEASUREMENTS_DIR);
 
+  // Generate and save profile
   console.log('\n  Generating user profile...');
   const userProfile = generateUserProfile();
-  saveJSON(PROFILE_FILE, userProfile);
+  const profilePath = path.join(PROFILES_DIR, `${userProfile.id}.json`);
+  saveJSON(profilePath, userProfile);
+  console.log(`  ✓ Saved profile: ${profilePath}`);
 
-  const sessions = generateAllMeasurements();
-  saveJSON(MEASUREMENTS_FILE, sessions);
+  // Generate and save measurements (individual files)
+  const measurements = generateAllMeasurements();
 
-  console.log('╔══════════════════════════════════════════════════════╗');
+  console.log('  Saving measurement files...');
+  for (const measurement of measurements) {
+    const timestamp = formatTimestampForFilename(new Date(measurement.timestamp));
+    const filename = `${timestamp}_${measurement.id}.json`;
+    const filePath = path.join(MEASUREMENTS_DIR, filename);
+    saveJSON(filePath, measurement);
+  }
+  console.log(`  ✓ Saved ${measurements.length} measurement files`);
+
+  console.log('\n╔══════════════════════════════════════════════════════╗');
   console.log('║                    Summary                            ║');
   console.log('╠══════════════════════════════════════════════════════╣');
-  console.log(`║  User Profile: ${PROFILE_FILE}`);
-  console.log(`║  Measurements: ${MEASUREMENTS_FILE}`);
-  console.log(`║  Total Records: ${sessions.length}`);
+  console.log(`║  Profile ID: ${userProfile.id}`);
+  console.log(`║  Profile:    ${profilePath}`);
+  console.log(`║  Measurements: ${MEASUREMENTS_DIR}/`);
+  console.log(`║  Total Records: ${measurements.length}`);
   console.log('╚══════════════════════════════════════════════════════╝\n');
 
   console.log('  Sample measurement (Day 1):');
-  console.log(JSON.stringify(sessions[0], null, 2).split('\n').map(l => '    ' + l).join('\n'));
+  console.log(
+    JSON.stringify(measurements[0], null, 2)
+      .split('\n')
+      .map((l) => '    ' + l)
+      .join('\n')
+  );
 
   console.log('\n  ✓ Test data generation complete!');
+  console.log('  Restart the app to see the test data.');
   console.log('  To remove test data, run: npm run test-data:remove\n');
 }
 

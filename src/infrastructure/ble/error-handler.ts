@@ -20,52 +20,39 @@ import { BLEError, BLEErrorCode } from '../../application/ports/BLEPort';
 export const BLE_ERRORS: Record<BLEErrorCode, BLEError> = {
   BLUETOOTH_OFF: {
     code: 'BLUETOOTH_OFF',
-    message: 'Bluetooth jest wyłączony',
+    message: 'ble:errors.BLUETOOTH_OFF.message',
     recoverable: true,
-    suggestion: 'Włącz Bluetooth w Ustawieniach systemu (Command + Spacja, wpisz "Bluetooth")'
+    suggestion: 'ble:errors.BLUETOOTH_OFF.suggestion'
   },
   DEVICE_NOT_FOUND: {
     code: 'DEVICE_NOT_FOUND',
-    message: 'Nie znaleziono wagi Xiaomi S400',
+    message: 'ble:errors.DEVICE_NOT_FOUND.message',
     recoverable: true,
-    suggestion: [
-      'Upewnij się, że:',
-      '  - Waga jest włączona (postaw na niej nogę)',
-      '  - Jesteś w zasięgu (< 5 metrów)',
-      '  - Aplikacja Xiaomi Home jest zamknięta'
-    ].join('\n')
+    suggestion: 'ble:errors.DEVICE_NOT_FOUND.suggestion'
   },
   CONNECTION_TIMEOUT: {
     code: 'CONNECTION_TIMEOUT',
-    message: 'Przekroczono czas połączenia (30s)',
+    message: 'ble:errors.CONNECTION_TIMEOUT.message',
     recoverable: true,
-    suggestion: [
-      'Spróbuj:',
-      '  - Wyłączyć i włączyć Bluetooth',
-      '  - Podejść bliżej do wagi',
-      '  - Usunąć przeszkody między urządzeniami'
-    ].join('\n')
+    suggestion: 'ble:errors.CONNECTION_TIMEOUT.suggestion'
   },
   READ_FAILED: {
     code: 'READ_FAILED',
-    message: 'Nie udało się odczytać danych z wagi',
+    message: 'ble:errors.READ_FAILED.message',
     recoverable: true,
-    suggestion: 'Waga mogła się rozłączyć. Spróbuj ponownie wykonać pomiar.'
+    suggestion: 'ble:errors.READ_FAILED.suggestion'
   },
   DECRYPTION_FAILED: {
     code: 'DECRYPTION_FAILED',
-    message: 'Błąd deszyfrowania danych',
+    message: 'ble:errors.DECRYPTION_FAILED.message',
     recoverable: false,
-    suggestion: [
-      'Klucz BLE może być nieprawidłowy.',
-      'Sprawdź konfigurację w Ustawieniach lub wyeksportuj klucz ponownie z Xiaomi Cloud.'
-    ].join(' ')
+    suggestion: 'ble:errors.DECRYPTION_FAILED.suggestion'
   },
   INVALID_DATA: {
     code: 'INVALID_DATA',
-    message: 'Otrzymano nieprawidłowe dane',
+    message: 'ble:errors.INVALID_DATA.message',
     recoverable: true,
-    suggestion: 'Pomiar mógł zostać przerwany. Stój spokojnie przez cały czas pomiaru.'
+    suggestion: 'ble:errors.INVALID_DATA.suggestion'
   }
 };
 

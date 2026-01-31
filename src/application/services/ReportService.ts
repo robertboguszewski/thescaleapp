@@ -150,30 +150,30 @@ function generateKeyInsight(
   status: 'improving' | 'stable' | 'declining'
 ): string {
   if (trends.measurementCount < 2) {
-    return 'Wykonuj regularne pomiary, aby sledzic postepy.';
+    return 'recommendations:health.report.regularMeasurements';
   }
 
   if (status === 'improving') {
     if (trends.bodyFatChange < -1 && trends.muscleChange > 0) {
-      return 'Swietne wyniki! Tracisz tkankke tluszczowa i budujesz miesnie.';
+      return 'recommendations:health.report.excellent';
     }
     if (trends.weightChange < -1) {
-      return 'Dobry postep w redukcji wagi. Utrzymuj tempo.';
+      return 'recommendations:health.report.goodProgress';
     }
-    return 'Twoje parametry poprawiaja sie. Kontynuuj obecny plan.';
+    return 'recommendations:health.report.improving';
   }
 
   if (status === 'declining') {
     if (trends.bodyFatChange > 2) {
-      return 'Wzrost tkanki tluszczowej. Rozwaz zwiekszenie aktywnosci fizycznej.';
+      return 'recommendations:health.report.fatIncrease';
     }
     if (trends.muscleChange < -1) {
-      return 'Spadek masy miesniowej. Zwieksz spozycie bialka i trening silowy.';
+      return 'recommendations:health.report.muscleLoss';
     }
-    return 'Niektore parametry wymagaja uwagi. Przejrzyj rekomendacje.';
+    return 'recommendations:health.report.needsAttention';
   }
 
-  return 'Parametry stabilne. Kontynuuj zdrowe nawyki.';
+  return 'recommendations:health.report.stable';
 }
 
 /**

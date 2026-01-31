@@ -29,37 +29,37 @@ export interface BLEStateMessage {
  */
 export const BLE_STATE_MESSAGES: Record<BLEConnectionState, BLEStateMessage> = {
   disconnected: {
-    title: 'Rozłączono',
-    description: 'Waga nie jest połączona. Naciśnij "Połącz" aby rozpocząć.',
+    title: 'ble:states.disconnected.title',
+    description: 'ble:states.disconnected.description',
     icon: 'disconnected',
-    action: 'Połącz'
+    action: 'ble:states.disconnected.action'
   },
   scanning: {
-    title: 'Szukam wagi...',
-    description: 'Upewnij się, że waga jest włączona i w zasięgu Bluetooth.',
+    title: 'ble:states.scanning.title',
+    description: 'ble:states.scanning.description',
     icon: 'scanning'
   },
   connecting: {
-    title: 'Łączenie...',
-    description: 'Nawiązuję połączenie z wagą. To może potrwać kilka sekund.',
+    title: 'ble:states.connecting.title',
+    description: 'ble:states.connecting.description',
     icon: 'connecting'
   },
   connected: {
-    title: 'Połączono',
-    description: 'Waga jest gotowa. Wejdź na wagę aby rozpocząć pomiar.',
+    title: 'ble:states.connected.title',
+    description: 'ble:states.connected.description',
     icon: 'connected',
-    action: 'Rozpocznij pomiar'
+    action: 'ble:states.connected.action'
   },
   reading: {
-    title: 'Pomiar w toku...',
-    description: 'Stój nieruchomo. Czekam na stabilizację wagi.',
+    title: 'ble:states.reading.title',
+    description: 'ble:states.reading.description',
     icon: 'reading'
   },
   error: {
-    title: 'Błąd',
-    description: 'Wystąpił problem z połączeniem.',
+    title: 'ble:states.error.title',
+    description: 'ble:states.error.description',
     icon: 'error',
-    action: 'Spróbuj ponownie'
+    action: 'ble:states.error.action'
   }
 };
 

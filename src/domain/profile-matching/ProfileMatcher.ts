@@ -81,7 +81,7 @@ export function detectProfile(
       type: 'no_match',
       confidence: 0,
       requiresConfirmation: true,
-      reason: 'Nieprawidłowa wartość wagi',
+      reason: 'recommendations:health.profileMatching.invalidWeight',
     };
   }
 
@@ -107,7 +107,7 @@ export function detectProfile(
         candidateIds: newProfiles.map((p) => p.profileId),
         confidence: 50,
         requiresConfirmation: true,
-        reason: 'Nowy profil bez historii pomiarów',
+        reason: 'recommendations:health.profileMatching.newProfileNoHistory',
       };
     }
 
@@ -115,7 +115,7 @@ export function detectProfile(
       type: 'no_match',
       confidence: 0,
       requiresConfirmation: true,
-      reason: 'Waga nie pasuje do żadnego profilu',
+      reason: 'recommendations:health.profileMatching.weightNoMatch',
     };
   }
 
@@ -131,7 +131,7 @@ export function detectProfile(
       profileId: match.profileId,
       confidence,
       requiresConfirmation: false,
-      reason: 'Dopasowano na podstawie wagi',
+      reason: 'recommendations:health.profileMatching.matchedByWeight',
     };
   }
 
@@ -141,7 +141,7 @@ export function detectProfile(
     candidateIds: matches.map((m) => m.profileId),
     confidence: 50,
     requiresConfirmation: true,
-    reason: 'Waga pasuje do wielu profili - wybierz użytkownika',
+    reason: 'recommendations:health.profileMatching.ambiguous',
   };
 }
 

@@ -35,12 +35,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'warning',
       category: 'bmi',
-      title: 'Niedowaga',
-      message: 'Twoje BMI wskazuje na niedowagę, co może zwiększać ryzyko niedoborów żywieniowych.',
+      title: 'recommendations:health.underweight.title',
+      message: 'recommendations:health.underweight.message',
       actions: [
-        'Zwiększ spożycie kalorii o 300-500 kcal/dzień',
-        'Skup się na wysokobiałkowych posiłkach',
-        'Rozważ konsultację z dietetykiem'
+        'recommendations:health.underweight.actions.0',
+        'recommendations:health.underweight.actions.1',
+        'recommendations:health.underweight.actions.2'
       ],
       sources: ['WHO BMI Classification']
     });
@@ -48,12 +48,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'critical',
       category: 'bmi',
-      title: 'Otyłość',
-      message: 'Twoje BMI wskazuje na otyłość, co zwiększa ryzyko chorób sercowo-naczyniowych.',
+      title: 'recommendations:health.obesity.title',
+      message: 'recommendations:health.obesity.message',
       actions: [
-        'Wprowadź deficyt kaloryczny 500-750 kcal/dzień',
-        'Zwiększ aktywność fizyczną do minimum 150 min/tydzień',
-        'Rozważ konsultację z lekarzem'
+        'recommendations:health.obesity.actions.0',
+        'recommendations:health.obesity.actions.1',
+        'recommendations:health.obesity.actions.2'
       ],
       sources: ['WHO Obesity Guidelines', 'ACSM Exercise Guidelines']
     });
@@ -65,12 +65,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'warning',
       category: 'body_fat',
-      title: 'Podwyższony poziom tkanki tłuszczowej',
-      message: 'Twój poziom tkanki tłuszczowej jest powyżej zalecanego zakresu.',
+      title: 'recommendations:health.elevatedBodyFat.title',
+      message: 'recommendations:health.elevatedBodyFat.message',
       actions: [
-        'Zwiększ aktywność fizyczną, w tym cardio',
-        'Ogranicz przetworzoną żywność i cukry proste',
-        'Zadbaj o odpowiednią ilość białka w diecie'
+        'recommendations:health.elevatedBodyFat.actions.0',
+        'recommendations:health.elevatedBodyFat.actions.1',
+        'recommendations:health.elevatedBodyFat.actions.2'
       ],
       sources: ['ACE Body Fat Guidelines']
     });
@@ -81,13 +81,13 @@ export function generateRecommendations(
     recommendations.push({
       type: 'critical',
       category: 'visceral',
-      title: 'Wysoki tłuszcz trzewny',
-      message: 'Wysoki poziom tłuszczu trzewnego znacząco zwiększa ryzyko cukrzycy i chorób serca.',
+      title: 'recommendations:health.highVisceralFat.title',
+      message: 'recommendations:health.highVisceralFat.message',
       actions: [
-        'Priorytet: redukcja obwodu talii',
-        'Wprowadź trening HIIT 2-3x w tygodniu',
-        'Ogranicz alkohol i stres',
-        'Rozważ konsultację medyczną'
+        'recommendations:health.highVisceralFat.actions.0',
+        'recommendations:health.highVisceralFat.actions.1',
+        'recommendations:health.highVisceralFat.actions.2',
+        'recommendations:health.highVisceralFat.actions.3'
       ],
       sources: ['Tanita Clinical Guidelines', 'WHO CVD Prevention']
     });
@@ -95,12 +95,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'warning',
       category: 'visceral',
-      title: 'Podwyższony tłuszcz trzewny',
-      message: 'Twój poziom tłuszczu trzewnego jest lekko podwyższony.',
+      title: 'recommendations:health.elevatedVisceralFat.title',
+      message: 'recommendations:health.elevatedVisceralFat.message',
       actions: [
-        'Zwiększ aktywność fizyczną',
-        'Ogranicz alkohol',
-        'Monitoruj regularnie'
+        'recommendations:health.elevatedVisceralFat.actions.0',
+        'recommendations:health.elevatedVisceralFat.actions.1',
+        'recommendations:health.elevatedVisceralFat.actions.2'
       ]
     });
   }
@@ -113,12 +113,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'info',
       category: 'muscle',
-      title: 'Niska masa mięśniowa',
-      message: 'Zwiększenie masy mięśniowej poprawi metabolizm i zdrowie ogólne.',
+      title: 'recommendations:health.lowMuscleMass.title',
+      message: 'recommendations:health.lowMuscleMass.message',
       actions: [
-        'Wprowadź trening siłowy 2-3x w tygodniu',
-        'Zwiększ spożycie białka do 1.6-2.2g/kg masy ciała',
-        'Zadbaj o regenerację (7-9h snu)'
+        'recommendations:health.lowMuscleMass.actions.0',
+        'recommendations:health.lowMuscleMass.actions.1',
+        'recommendations:health.lowMuscleMass.actions.2'
       ],
       sources: ['ISSN Position Stand on Protein', 'ACSM Resistance Training Guidelines']
     });
@@ -130,12 +130,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'info',
       category: 'hydration',
-      title: 'Możliwe odwodnienie',
-      message: 'Twój poziom wody w organizmie może być niewystarczający.',
+      title: 'recommendations:health.possibleDehydration.title',
+      message: 'recommendations:health.possibleDehydration.message',
       actions: [
-        'Pij minimum 2-3 litry wody dziennie',
-        'Ogranicz kofeina i alkohol',
-        'Wykonuj pomiar rano dla dokładniejszych wyników'
+        'recommendations:health.possibleDehydration.actions.0',
+        'recommendations:health.possibleDehydration.actions.1',
+        'recommendations:health.possibleDehydration.actions.2'
       ]
     });
   }
@@ -145,12 +145,12 @@ export function generateRecommendations(
     recommendations.push({
       type: 'info',
       category: 'general',
-      title: 'Dobra kondycja!',
-      message: 'Twoje parametry są w zdrowych zakresach. Kontynuuj obecny styl życia.',
+      title: 'recommendations:health.goodCondition.title',
+      message: 'recommendations:health.goodCondition.message',
       actions: [
-        'Utrzymuj regularną aktywność fizyczną',
-        'Kontynuuj zbilansowaną dietę',
-        'Wykonuj pomiary regularnie dla monitoringu'
+        'recommendations:health.goodCondition.actions.0',
+        'recommendations:health.goodCondition.actions.1',
+        'recommendations:health.goodCondition.actions.2'
       ]
     });
   }
