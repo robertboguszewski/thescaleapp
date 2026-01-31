@@ -1,12 +1,69 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+out/
+build/
+
+# Test coverage
 coverage/
+
+# Release/packaging
 release/
+*.dmg
+*.exe
+*.AppImage
+*.deb
+*.rpm
+*.snap
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # Generated test data
 /test-data/
 
 # Debug/temp files
 test-*.cjs
+*.tmp
+*.temp
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Electron specific
+.electron/
+
+# Secrets (should never be committed)
+*.pem
+*.key
+secrets.json
+credentials.json

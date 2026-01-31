@@ -1,6 +1,13 @@
 # TheScale App
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Electron](https://img.shields.io/badge/Electron-40.x-47848F?logo=electron)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+
 Desktop application for Xiaomi Mi Body Composition Scale S400 that enables weight tracking, body composition analysis, and health monitoring on macOS.
+
+> **Note**: This application is not affiliated with or endorsed by Xiaomi Corporation.
 
 ## Features
 
@@ -155,7 +162,17 @@ Body composition formulas are based on peer-reviewed research:
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the [MIT License](LICENSE).
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+## Security
+
+For security concerns, please see our [Security Policy](SECURITY.md).
 
 ## Acknowledgments
 
