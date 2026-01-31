@@ -23,7 +23,13 @@
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "test-data:generate": "npx ts-node --esm scripts/test-data/generator.ts --generate",
-    "test-data:remove": "npx ts-node --esm scripts/test-data/generator.ts --remove"
+    "test-data:remove": "npx ts-node --esm scripts/test-data/generator.ts --remove",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "release": "npm run build && electron-builder --publish always"
   },
   "keywords": [
     "electron",
@@ -49,6 +55,7 @@
     "autoprefixer": "^10.4.24",
     "concurrently": "^8.2.2",
     "electron": "^40.1.0",
+    "electron-builder": "^24.13.3",
     "jsdom": "^27.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",

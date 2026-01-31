@@ -15,8 +15,12 @@ files:
   - dist/**/*
   - package.json
 
+# Icon configuration
+icon: build/icons/icon
+
 # macOS Configuration
 mac:
+  icon: build/icons/icon.icns
   category: public.app-category.healthcare-fitness
   target:
     - target: dmg
@@ -48,6 +52,7 @@ dmg:
 
 # Windows Configuration (future)
 win:
+  icon: build/icons/icon.ico
   target:
     - target: nsis
       arch:
@@ -61,6 +66,7 @@ nsis:
 
 # Linux Configuration (future)
 linux:
+  icon: build/icons/icon.png
   target:
     - target: AppImage
       arch:
@@ -68,7 +74,6 @@ linux:
   category: Utility
   artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 
-# Native modules rebuild
-electronRebuild:
-  onlyModules:
-    - "@abandonware/noble"
+# Native modules rebuild (use npmRebuild instead of deprecated electronRebuild)
+npmRebuild: true
+nodeGypRebuild: false
