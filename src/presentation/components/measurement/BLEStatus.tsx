@@ -8,6 +8,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBLEStore, getStatusMessage } from '../../stores/bleStore';
 import type { BLEConnectionState } from '../../../application/ports/BLEPort';
 import { getBLEStateMessage } from '../../../domain/ble-states';
@@ -144,6 +145,7 @@ export const BLEStatus: React.FC<BLEStatusProps> = ({
   onAction,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const { connectionState, lastError } = useBLEStore();
   const colors = getStateColors(connectionState);
   const stateMessage = getBLEStateMessage(connectionState);
@@ -155,7 +157,7 @@ export const BLEStatus: React.FC<BLEStatusProps> = ({
           <StatusIcon state={connectionState} className="w-5 h-5" />
         </div>
         <span className={`text-sm font-medium ${colors.text}`}>
-          {stateMessage.title}
+          {t(stateMessage.title)}
         </span>
       </div>
     );
@@ -172,10 +174,10 @@ export const BLEStatus: React.FC<BLEStatusProps> = ({
         {/* Status info */}
         <div className="flex-1">
           <h3 className={`text-lg font-semibold ${colors.text}`}>
-            {stateMessage.title}
+            {t(stateMessage.title)}
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            {stateMessage.description}
+            {t(stateMessage.description)}
           </p>
 
           {/* Error message */}
@@ -205,7 +207,7 @@ export const BLEStatus: React.FC<BLEStatusProps> = ({
                 }
               `}
             >
-              {stateMessage.action}
+              {t(stateMessage.action)}
             </button>
           )}
         </div>
@@ -220,6 +222,7 @@ export const BLEStatus: React.FC<BLEStatusProps> = ({
 export const InlineBLEStatus: React.FC<{
   onClick?: () => void;
 }> = ({ onClick }) => {
+  const { t } = useTranslation();
   const { connectionState } = useBLEStore();
   const colors = getStateColors(connectionState);
   const stateMessage = getBLEStateMessage(connectionState);
@@ -242,7 +245,7 @@ export const InlineBLEStatus: React.FC<{
         )}
       </div>
       <span className={`text-xs font-medium ${colors.text}`}>
-        {stateMessage.title}
+        {t(stateMessage.title)}
       </span>
     </button>
   );

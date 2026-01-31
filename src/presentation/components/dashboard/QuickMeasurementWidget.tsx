@@ -45,6 +45,16 @@ const BluetoothIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5"
 );
 
 /**
+ * Spinner icon for loading state
+ */
+const SpinnerIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  </svg>
+);
+
+/**
  * Live weight display
  */
 const LiveWeightDisplay: React.FC<{
@@ -53,14 +63,38 @@ const LiveWeightDisplay: React.FC<{
   t: (key: string) => string;
 }> = ({ weight, isStable, t }) => (
   <div className="text-center py-4">
-    <div className={`text-4xl font-bold ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+    {/* Measuring indicator */}
+    <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+      {isStable ? (
+        <ScaleIcon className="w-7 h-7 text-green-500" />
+      ) : (
+        <SpinnerIcon className="w-7 h-7 text-blue-500" />
+      )}
+    </div>
+
+    {/* Weight value */}
+    <div className={`text-4xl font-bold transition-colors ${isStable ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`}>
       {weight > 0 ? weight.toFixed(1) : '---'}
       <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-1">kg</span>
     </div>
-    <p className={`text-sm mt-2 ${isStable ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-      {isStable ? t('quick.stabilized') : t('quick.stabilizing')}
+
+    {/* Status message */}
+    <p className={`text-sm mt-2 font-medium ${isStable ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}`}>
+      {isStable ? t('quick.stabilized') : t('quick.measuring')}
+    </p>
+    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+      {isStable ? '' : t('quick.standStill')}
     </p>
   </div>
+);
+
+/**
+ * Check icon for success state
+ */
+const CheckIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
 );
 
 /**
@@ -69,23 +103,49 @@ const LiveWeightDisplay: React.FC<{
 const ResultPreview: React.FC<{
   weight: number;
   bmi?: number;
+  bodyFat?: number;
+  muscleMass?: number;
   onSave: () => void;
   onDiscard: () => void;
   onViewDetails: () => void;
   isSaving: boolean;
   isSaved: boolean;
   t: (key: string) => string;
-}> = ({ weight, bmi, onSave, onDiscard, onViewDetails, isSaving, isSaved, t }) => (
+}> = ({ weight, bmi, bodyFat, muscleMass, onSave, onDiscard, onViewDetails, isSaving, isSaved, t }) => (
   <div className="text-center py-2">
+    {/* Success indicator */}
+    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+      <CheckIcon className="w-6 h-6 text-green-500" />
+    </div>
+
+    {/* Weight - primary metric */}
     <div className="text-3xl font-bold text-green-600 dark:text-green-400">
       {weight.toFixed(1)}
       <span className="text-base font-normal text-gray-500 dark:text-gray-400 ml-1">kg</span>
     </div>
-    {bmi && (
-      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        BMI: {bmi.toFixed(1)}
-      </p>
-    )}
+
+    {/* Summary metrics grid */}
+    <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+      {bmi && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">BMI</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">{bmi.toFixed(1)}</p>
+        </div>
+      )}
+      {bodyFat && bodyFat > 0 && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('result.metrics.bodyFat')}</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">{bodyFat.toFixed(1)}%</p>
+        </div>
+      )}
+      {muscleMass && muscleMass > 0 && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('result.metrics.muscleMass')}</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">{muscleMass.toFixed(1)}kg</p>
+        </div>
+      )}
+    </div>
+
     {!isSaved ? (
       <div className="flex justify-center gap-2 mt-4">
         <Button
@@ -158,16 +218,23 @@ export const QuickMeasurementWidget: React.FC = () => {
     }
   }, [connectionState, widgetState]);
 
-  // Handle measurement received
+  // Show measuring state when liveWeight changes (for live feedback during measurement)
   useEffect(() => {
-    if (bleAutoConnect.lastMeasurement && widgetState === 'ready') {
+    if (liveWeight > 0 && widgetState === 'ready') {
+      setWidgetState('measuring');
+    }
+  }, [liveWeight, widgetState]);
+
+  // Handle measurement received (final stabilized measurement)
+  useEffect(() => {
+    if (bleAutoConnect.lastMeasurement && (widgetState === 'ready' || widgetState === 'measuring')) {
       const raw = bleAutoConnect.lastMeasurement;
 
-      // Debounce
+      // Debounce - prevent processing same weight
       if (raw.weightKg === lastProcessedRef.current) return;
       lastProcessedRef.current = raw.weightKg;
 
-      setWidgetState('measuring');
+      // Update live weight display
       setLiveWeight(raw.weightKg);
       setIsStable(true);
 
@@ -201,7 +268,10 @@ export const QuickMeasurementWidget: React.FC = () => {
         isSaved: false,
       });
 
-      setWidgetState('result');
+      // Transition to result after brief delay to show stabilized state
+      setTimeout(() => {
+        setWidgetState('result');
+      }, 500);
     }
   }, [bleAutoConnect.lastMeasurement, widgetState, currentProfile, setCurrentMeasurement, setLiveWeight, setIsStable]);
 
@@ -334,6 +404,8 @@ export const QuickMeasurementWidget: React.FC = () => {
               <ResultPreview
                 weight={measurementResult.weight}
                 bmi={measurementResult.bmi}
+                bodyFat={measurementResult.calculated?.bodyFatPercent}
+                muscleMass={measurementResult.calculated?.muscleMassKg}
                 onSave={handleSave}
                 onDiscard={handleDiscard}
                 onViewDetails={handleViewDetails}

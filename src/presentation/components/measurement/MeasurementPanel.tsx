@@ -16,7 +16,7 @@ import { ErrorMessage } from '../common/ErrorMessage';
 import { BLEStatus } from './BLEStatus';
 import { MeasurementResult, LiveWeightDisplay } from './MeasurementResult';
 import { ProfileSelectionDialog, ProfileOption } from './ProfileSelectionDialog';
-import { useBLEStore, useIsConnected, useIsBusy } from '../../stores/bleStore';
+import { useBLEStore, useIsConnected, useIsBusy, useIsDeviceConfigured } from '../../stores/bleStore';
 import { useMeasurementStore } from '../../stores/measurementStore';
 import { useProfileStore, useCurrentProfile } from '../../stores/profileStore';
 import { useAppStore } from '../../stores/appStore';
@@ -261,9 +261,10 @@ export const MeasurementPanel: React.FC = () => {
   const lastProcessedMeasurementRef = React.useRef<number | null>(null);
 
   // Store hooks
-  const { connectionState, liveWeight, isStable, setConnectionState, setLiveWeight, setIsStable, lastError, autoConnect, deviceMac } = useBLEStore();
+  const { connectionState, liveWeight, liveHeartRate, liveImpedance, isStable, setConnectionState, setLiveWeight, setIsStable, lastError, deviceMac } = useBLEStore();
   const isConnected = useIsConnected();
   const isBusy = useIsBusy();
+  const isDeviceConfigured = useIsDeviceConfigured();
   const { currentMeasurement, setCurrentMeasurement, clearCurrentMeasurement, addMeasurement, setSaving, isSaving } = useMeasurementStore();
   const { profiles, showProfileSelector, setShowProfileSelector } = useProfileStore();
   const currentProfile = useCurrentProfile();
@@ -271,9 +272,6 @@ export const MeasurementPanel: React.FC = () => {
 
   // Native BLE hook for measurement listening
   const ble = useBLE();
-
-  // Check if device is configured (saved from previous connection)
-  const isDeviceConfigured = autoConnect && !!deviceMac;
 
   // Derived state
   const hasMeasurementResult = currentMeasurement.raw !== null && currentMeasurement.calculated !== null;
@@ -343,20 +341,31 @@ export const MeasurementPanel: React.FC = () => {
     }
   };
 
+  // Auto-transition to ready state when device connects
+  React.useEffect(() => {
+    if (panelState === 'idle' && (connectionState === 'connected' || connectionState === 'reading')) {
+      setPanelState('ready');
+    }
+  }, [panelState, connectionState]);
+
   // Check for device configuration and connection state
   // Show appropriate prompt based on state
+  // IMPORTANT: If already connected, skip prompts and show measurement UI
   if (panelState === 'idle' || panelState === 'connecting') {
-    if (!isDeviceConfigured) {
-      // First time - no device configured, guide to settings
-      return <FirstTimeConnectionPrompt onConfigure={() => setActiveTab('settings')} />;
-    } else if (connectionState !== 'connected' && connectionState !== 'reading') {
-      // Device saved but not connected - show reconnect prompt
-      return (
-        <SavedDeviceReconnectPrompt
-          onConnect={handleConnect}
-          isConnecting={panelState === 'connecting' || connectionState === 'scanning' || connectionState === 'connecting'}
-        />
-      );
+    // If device is connected/reading, skip all prompts - show measurement UI
+    if (connectionState !== 'connected' && connectionState !== 'reading') {
+      if (!isDeviceConfigured) {
+        // First time - no device configured, guide to settings
+        return <FirstTimeConnectionPrompt onConfigure={() => setActiveTab('settings')} />;
+      } else {
+        // Device saved but not connected - show reconnect prompt
+        return (
+          <SavedDeviceReconnectPrompt
+            onConnect={handleConnect}
+            isConnecting={panelState === 'connecting' || connectionState === 'scanning' || connectionState === 'connecting'}
+          />
+        );
+      }
     }
   }
 
@@ -629,11 +638,13 @@ export const MeasurementPanel: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* BLE Status */}
-      <BLEStatus
-        showAction={panelState === 'idle'}
-        onAction={handleConnect}
-      />
+      {/* BLE Status - hide when showing measurement result */}
+      {panelState !== 'result' && (
+        <BLEStatus
+          showAction={panelState === 'idle'}
+          onAction={handleConnect}
+        />
+      )}
 
       {/* Error state */}
       {connectionState === 'error' && lastError && (
@@ -677,53 +688,54 @@ export const MeasurementPanel: React.FC = () => {
         </Card>
       )}
 
-      {/* Ready state - passive listening mode */}
+      {/* Ready state - passive listening mode with live weight */}
       {panelState === 'ready' && (
-        <Card className="text-center py-12">
-          <div className="w-24 h-24 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6 animate-pulse">
-            <svg
-              className="w-12 h-12 text-green-500"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {t('panel.listening.active')}
-          </h2>
-          <p className="mt-2 text-gray-500 dark:text-gray-400">
-            {t('panel.status.connected')} <span className="font-medium text-green-600">{ble.deviceName || 'Mi Scale'}</span>
-          </p>
-          <p className="mt-2 text-gray-500 dark:text-gray-400">
-            {t('panel.status.profile')} <span className="font-medium">{getProfileDisplayName()}</span>
-            {profiles.length > 1 && (
-              <span className="text-sm ml-2">{t('panel.status.autoDetection')}</span>
-            )}
-          </p>
-          <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <p className="text-green-700 dark:text-green-300 font-medium">
-              {t('panel.status.ready')}
+        <Card>
+          {/* Show live weight when receiving data from scale */}
+          {(liveWeight ?? 0) > 0 ? (
+            <LiveWeightDisplay weight={liveWeight} heartRate={liveHeartRate} impedance={liveImpedance} isStable={isStable} />
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-24 h-24 mx-auto rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-6 animate-pulse">
+                <svg
+                  className="w-12 h-12 text-green-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {t('panel.listening.active')}
+              </h2>
+            </div>
+          )}
+          <div className="text-center mt-4">
+            <p className="text-gray-500 dark:text-gray-400">
+              {t('panel.status.connected')} <span className="font-medium text-green-600">{ble.deviceName || 'Mi Scale'}</span>
             </p>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              {t('panel.status.profile')} <span className="font-medium">{getProfileDisplayName()}</span>
+              {profiles.length > 1 && (
+                <span className="text-sm ml-2">{t('panel.status.autoDetection')}</span>
+              )}
+            </p>
+            <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <p className="text-green-700 dark:text-green-300 font-medium">
+                {(liveWeight ?? 0) > 0 ? t('panel.status.stayOnScale') : t('panel.status.ready')}
+              </p>
+            </div>
           </div>
-          <Button
-            variant="outline"
-            size="md"
-            className="mt-6"
-            onClick={handleStartMeasurement}
-          >
-            {t('panel.status.manual')}
-          </Button>
         </Card>
       )}
 
       {/* Measuring state - live weight */}
       {panelState === 'measuring' && (
         <Card>
-          <LiveWeightDisplay weight={liveWeight} isStable={isStable} />
+          <LiveWeightDisplay weight={liveWeight} heartRate={liveHeartRate} impedance={liveImpedance} isStable={isStable} />
           <div className="text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {t('panel.status.stayOnScale')}
