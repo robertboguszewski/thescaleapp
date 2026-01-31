@@ -6,3 +6,6 @@ coverage/
 
 # Generated test data
 /test-data/
+
+# Debug/temp files
+test-*.cjs
