@@ -58,8 +58,10 @@ export interface ResolvedUserProfile {
 export interface RawMeasurement {
   /** Body weight in kilograms (valid range: 0.1-150) */
   weightKg: number;
-  /** Bioelectrical impedance in Ohms (optional) */
+  /** Bioelectrical impedance in Ohms - high frequency (optional) */
   impedanceOhm?: number;
+  /** Bioelectrical impedance in Ohms - low frequency (optional, for S400) */
+  impedanceLowOhm?: number;
   /** Heart rate in beats per minute (optional) */
   heartRateBpm?: number;
 }

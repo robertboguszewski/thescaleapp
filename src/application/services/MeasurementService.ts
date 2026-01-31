@@ -7,6 +7,7 @@
  * @module application/services/MeasurementService
  */
 
+import crypto from 'crypto';
 import type { BLEPort } from '../ports/BLEPort';
 import type {
   MeasurementRepository,
