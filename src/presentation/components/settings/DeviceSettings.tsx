@@ -276,7 +276,7 @@ export const DeviceSettings: React.FC = () => {
   };
 
   // Handle save
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!isValidMac(localMac)) {
       addNotification({
         type: 'error',
@@ -297,11 +297,26 @@ export const DeviceSettings: React.FC = () => {
       return;
     }
 
+    // Update zustand store
     setDeviceConfig({
       deviceMac: localMac,
       bleKey: localKey,
       deviceName: localName || undefined,
     });
+
+    // Sync to electron-store for Python BLE scanner
+    try {
+      await window.electronAPI.setBLEConfig({
+        deviceMac: localMac,
+        bleKey: localKey,
+        autoConnect,
+        scanTimeout,
+      });
+      console.log('[DeviceSettings] BLE config synced to electron-store');
+    } catch (err) {
+      console.error('[DeviceSettings] Failed to sync BLE config:', err);
+    }
+
     addNotification({
       type: 'success',
       title: t('device.saved'),
@@ -310,11 +325,24 @@ export const DeviceSettings: React.FC = () => {
   };
 
   // Handle clear
-  const handleClear = () => {
+  const handleClear = async () => {
     clearDeviceConfig();
     setLocalMac('');
     setLocalKey('');
     setLocalName('');
+
+    // Sync cleared config to electron-store
+    try {
+      await window.electronAPI.setBLEConfig({
+        deviceMac: null,
+        bleKey: null,
+        autoConnect: false,
+        scanTimeout: 30000,
+      });
+    } catch (err) {
+      console.error('[DeviceSettings] Failed to clear BLE config:', err);
+    }
+
     addNotification({
       type: 'info',
       title: t('device.cleared'),
@@ -365,8 +393,8 @@ export const DeviceSettings: React.FC = () => {
         throw new Error(result.error?.message || 'Failed to start scanning');
       }
 
-      // Wait for scan duration (10 seconds)
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      // Wait for scan duration (30 seconds for better scale detection)
+      await new Promise((resolve) => setTimeout(resolve, 30000));
 
       // Stop scanning
       await window.electronAPI.nativeBLE.stopScanning();

@@ -7,6 +7,7 @@
  * @module application/services/ProfileService
  */
 
+import crypto from 'crypto';
 import type {
   ProfileRepository,
   StoredUserProfile,

@@ -1,14 +1,19 @@
 /**
  * Xiaomi Cloud Login Component
  *
- * Handles QR code-based authentication with Xiaomi cloud
+ * Handles browser-based authentication with Xiaomi cloud
  * for extracting BLE encryption keys.
+ *
+ * Simplified flow:
+ * 1. User selects region
+ * 2. Opens login URL in browser
+ * 3. Polls for confirmation
+ * 4. Auto-extracts BLE key
  *
  * @module presentation/components/settings/XiaomiCloudLogin
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import QRCode from 'qrcode';
 import { useTranslation } from 'react-i18next';
 import { useXiaomiStore, useMiScaleDevices } from '../../stores/xiaomiStore';
 import { useBLEStore } from '../../stores/bleStore';
@@ -97,42 +102,16 @@ export const XiaomiCloudLogin: React.FC = () => {
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isExtractingKey, setIsExtractingKey] = useState(false);
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
 
   /**
-   * Generate QR code locally when session is available
+   * Open login URL in browser and start polling
    */
-  useEffect(() => {
-    if (qrSession?.qrCodeUrl) {
-      // Generate QR code from the URL (the qrCodeUrl contains the login ticket)
-      QRCode.toDataURL(qrSession.qrCodeUrl, {
-        width: 240,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#ffffff',
-        },
-      })
-        .then((dataUrl) => {
-          setQrCodeDataUrl(dataUrl);
-        })
-        .catch((err) => {
-          console.error('[XiaomiCloudLogin] Failed to generate QR code:', err);
-          setError(t('xiaomiCloud.qrGenerateError'));
-        });
-    } else {
-      setQrCodeDataUrl(null);
-    }
-  }, [qrSession?.qrCodeUrl, setError, t]);
-
-  /**
-   * Start QR code login
-   */
-  const handleStartLogin = useCallback(async () => {
+  const handleOpenBrowserLogin = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
+      // Get login session
       const response = await window.electronAPI.startXiaomiQRLogin();
 
       if (!response.success || !response.data) {
@@ -142,6 +121,9 @@ export const XiaomiCloudLogin: React.FC = () => {
       setQRSession(response.data);
       setLoginStatus('pending');
       setIsPolling(true);
+
+      // Open login URL in external browser
+      await window.electronAPI.openExternalUrl(response.data.loginUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common:errors.unknown'));
     } finally {
@@ -220,11 +202,19 @@ export const XiaomiCloudLogin: React.FC = () => {
 
                 // Auto-configure BLE store with device name
                 if (formattedMac && keyResponse.data.beaconKey) {
-                  setDeviceConfig({
+                  const bleConfig = {
                     deviceMac: formattedMac,
                     bleKey: keyResponse.data.beaconKey,
+                    autoConnect: false,
+                    scanTimeout: 30000,
+                  };
+                  setDeviceConfig({
+                    ...bleConfig,
                     deviceName: firstMiScale.name || 'Mi Scale',
                   });
+                  // Sync to electron-store for Python scanner
+                  await window.electronAPI.setBLEConfig(bleConfig);
+                  console.log('[XiaomiCloudLogin] BLE config saved to electron-store');
                 }
               }
             } catch (keyErr) {
@@ -307,10 +297,16 @@ export const XiaomiCloudLogin: React.FC = () => {
 
       // Automatically configure BLE store with the key
       if (formattedMac && response.data.beaconKey) {
-        setDeviceConfig({
+        const bleConfig = {
           deviceMac: formattedMac,
           bleKey: response.data.beaconKey,
-        });
+          autoConnect: false,
+          scanTimeout: 30000,
+        };
+        setDeviceConfig(bleConfig);
+        // Sync to electron-store for Python scanner
+        await window.electronAPI.setBLEConfig(bleConfig);
+        console.log('[XiaomiCloudLogin] BLE config saved to electron-store');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common:errors.unknown'));
@@ -328,7 +324,7 @@ export const XiaomiCloudLogin: React.FC = () => {
   }, [reset]);
 
   /**
-   * Cancel QR login
+   * Cancel login
    */
   const handleCancelLogin = useCallback(() => {
     setIsPolling(false);
@@ -430,139 +426,53 @@ export const XiaomiCloudLogin: React.FC = () => {
     );
   }
 
-  // Render QR code view
-  if (qrSession) {
+  // Render waiting for login view
+  if (qrSession && isPolling) {
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-white">{t('xiaomiCloud.loginToCloud')}</h3>
 
-        <div className="text-center space-y-4">
-          {/* QR Code */}
-          <div className="inline-block p-4 bg-white rounded-lg">
-            {qrCodeDataUrl ? (
-              <img
-                src={qrCodeDataUrl}
-                alt="QR Code"
-                className="w-48 h-48"
-              />
-            ) : (
-              <div className="w-48 h-48 flex items-center justify-center">
-                <svg className="animate-spin h-8 w-8 text-gray-400" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-
-          {/* Status */}
-          <div className="text-sm">
-            {loginStatus === 'pending' && (
-              <div className="space-y-2">
-                <span className="text-yellow-400 block">
-                  {t('xiaomiCloud.scanQrOrUseLink')}
-                </span>
-                <div className="text-left bg-gray-800 rounded-lg p-3 text-xs text-gray-300 space-y-2">
-                  <p className="font-medium text-white">⚠️ {t('xiaomiCloud.important')}</p>
-                  <div className="bg-blue-900/30 border border-blue-600 rounded p-2 mb-2">
-                    <p className="text-blue-300 font-medium">{t('xiaomiCloud.option1Recommended')}</p>
-                    <p className="text-gray-400">{t('xiaomiCloud.option1Desc')}</p>
-                  </div>
-                  <div className="bg-gray-700/50 rounded p-2">
-                    <p className="text-gray-300 font-medium">{t('xiaomiCloud.option2')}</p>
-                    <ol className="list-decimal list-inside space-y-1 text-gray-400">
-                      <li>{t('xiaomiCloud.option2Step1')}</li>
-                      <li>{t('xiaomiCloud.option2Step2')}</li>
-                      <li>{t('xiaomiCloud.option2Step3')}</li>
-                      <li>{t('xiaomiCloud.option2Step4')}</li>
-                    </ol>
-                  </div>
-                  <p className="text-red-400 mt-2 text-xs">
-                    ❌ {t('xiaomiCloud.scannerWarning')}
-                  </p>
+        <div className="text-center space-y-6 py-4">
+          {/* Status indicator */}
+          <div className="flex flex-col items-center gap-4">
+            {loginStatus === 'scanned' ? (
+              <>
+                <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
-              </div>
-            )}
-            {loginStatus === 'scanned' && (
-              <span className="text-blue-400">{t('xiaomiCloud.scanned')}</span>
+                <span className="text-blue-400 font-medium">{t('xiaomiCloud.scanned')}</span>
+                <p className="text-sm text-gray-400">{t('xiaomiCloud.confirmInApp')}</p>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-orange-500/20 flex items-center justify-center">
+                  <svg className="animate-spin w-8 h-8 text-orange-400" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                </div>
+                <span className="text-orange-400 font-medium">{t('xiaomiCloud.waitingForLogin')}</span>
+                <p className="text-sm text-gray-400">{t('xiaomiCloud.completeInBrowser')}</p>
+              </>
             )}
           </div>
 
-          {/* Loading indicator */}
-          {isPolling && (
-            <div className="flex items-center justify-center gap-2 text-gray-400">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>{t('xiaomiCloud.waitingForLogin')}</span>
-            </div>
-          )}
-
-          {/* Login link - primary option */}
-          <div className="bg-green-900/30 border border-green-600 rounded-lg p-3">
-            <p className="text-green-400 font-medium text-sm mb-2">🔗 {t('xiaomiCloud.loginLink')}</p>
-            <div className="flex items-center gap-2 mb-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(qrSession.loginUrl);
-                  // Show temporary feedback
-                  const btn = document.getElementById('copy-url-btn');
-                  if (btn) {
-                    btn.textContent = `✓ ${t('xiaomiCloud.copied')}`;
-                    setTimeout(() => {
-                      btn.textContent = `📋 ${t('xiaomiCloud.copyUrl')}`;
-                    }, 2000);
-                  }
-                }}
-                id="copy-url-btn"
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors flex-shrink-0"
-              >
-                📋 {t('xiaomiCloud.copyUrl')}
-              </button>
-              <span className="text-gray-400 text-xs">{t('xiaomiCloud.copyAndPaste')}</span>
-            </div>
-            <a
-              href={qrSession.loginUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline break-all text-xs block"
-            >
-              {qrSession.loginUrl}
-            </a>
-            <p className="text-gray-400 text-xs mt-2">
-              {t('xiaomiCloud.openLinkDesc')}
-            </p>
+          {/* Instructions */}
+          <div className="bg-gray-800/50 rounded-lg p-4 text-left">
+            <p className="text-sm text-gray-300 mb-2">{t('xiaomiCloud.browserInstructions')}</p>
+            <ol className="list-decimal list-inside space-y-1 text-sm text-gray-400">
+              <li>{t('xiaomiCloud.browserStep1')}</li>
+              <li>{t('xiaomiCloud.browserStep2')}</li>
+              <li>{t('xiaomiCloud.browserStep3')}</li>
+            </ol>
           </div>
 
           {/* Cancel button */}
           <button
             onClick={handleCancelLogin}
-            className="px-4 py-2 text-sm text-gray-400 hover:text-white"
+            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
           >
             {t('xiaomiCloud.cancel')}
           </button>
@@ -581,7 +491,7 @@ export const XiaomiCloudLogin: React.FC = () => {
   // Render initial login view
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium text-white">Xiaomi Cloud</h3>
+      <h3 className="text-lg font-medium text-white">{t('xiaomiCloud.title')}</h3>
 
       <p className="text-sm text-gray-400">
         {t('xiaomiCloud.cloudDescription')}
@@ -608,11 +518,26 @@ export const XiaomiCloudLogin: React.FC = () => {
 
       {/* Login button */}
       <button
-        onClick={handleStartLogin}
+        onClick={handleOpenBrowserLogin}
         disabled={isLoading}
-        className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+        className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
       >
-        {isLoading ? t('xiaomiCloud.loading') : t('xiaomiCloud.loginWithQr')}
+        {isLoading ? (
+          <>
+            <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            {t('xiaomiCloud.loading')}
+          </>
+        ) : (
+          <>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            {t('xiaomiCloud.openInBrowser')}
+          </>
+        )}
       </button>
 
       {/* Error display */}
@@ -628,14 +553,10 @@ export const XiaomiCloudLogin: React.FC = () => {
           <strong>{t('xiaomiCloud.howItWorks')}</strong>
         </p>
         <ol className="list-decimal list-inside space-y-1">
-          <li>{t('xiaomiCloud.step1')}</li>
-          <li>{t('xiaomiCloud.step2')}</li>
-          <li>{t('xiaomiCloud.step3')}</li>
-          <li>{t('xiaomiCloud.step4')}</li>
+          <li>{t('xiaomiCloud.simpleStep1')}</li>
+          <li>{t('xiaomiCloud.simpleStep2')}</li>
+          <li>{t('xiaomiCloud.simpleStep3')}</li>
         </ol>
-        <p className="text-gray-600 mt-2">
-          {t('xiaomiCloud.scannerWarning')}
-        </p>
       </div>
     </div>
   );

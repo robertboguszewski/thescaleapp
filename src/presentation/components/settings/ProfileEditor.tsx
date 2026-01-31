@@ -409,12 +409,6 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
     }));
   };
 
-  // Handle ethnicity change specifically (can be undefined)
-  const handleEthnicityChange = (value: string) => {
-    const ethnicity = value === '' ? undefined : (value as 'asian' | 'non-asian');
-    setFormData((prev) => ({ ...prev, ethnicity }));
-  };
-
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -580,16 +574,6 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
             max={220}
             required
             helperText={t('profileEditor.heightHelper')}
-          />
-          <FormSelect
-            label={t('profileEditor.ethnicity')}
-            name="ethnicity"
-            value={formData.ethnicity || ''}
-            onChange={handleEthnicityChange}
-            options={[
-              { value: 'asian', label: t('common:ethnicity.asian') },
-              { value: 'non-asian', label: t('common:ethnicity.nonAsian') },
-            ]}
           />
         </div>
 
