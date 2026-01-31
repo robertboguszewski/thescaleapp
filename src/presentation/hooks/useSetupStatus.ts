@@ -9,6 +9,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../stores/profileStore';
 import { useIsDeviceConfigured } from '../stores/bleStore';
 import { useMeasurementStore } from '../stores/measurementStore';
@@ -79,6 +80,7 @@ export interface SetupStatus {
  * ```
  */
 export function useSetupStatus(): SetupStatus {
+  const { t } = useTranslation('dashboard');
   // Get state from stores
   const profiles = useProfileStore((state) => state.profiles);
   const deviceConfigured = useIsDeviceConfigured();
@@ -111,27 +113,27 @@ export function useSetupStatus(): SetupStatus {
     return [
       {
         id: 'profile',
-        label: 'Utwórz profil',
-        description: 'Dodaj swój profil z danymi osobowymi',
+        label: t('setup.step2'),
+        description: t('setup.step2Desc'),
         status: getProfileStatus(),
         navigateTo: { tab: 'settings', subTab: 'profiles' },
       },
       {
         id: 'device',
-        label: 'Skonfiguruj wagę',
-        description: 'Połącz wagę Xiaomi przez Bluetooth',
+        label: t('setup.step1'),
+        description: t('setup.step1Desc'),
         status: getDeviceStatus(),
         navigateTo: { tab: 'settings', subTab: 'device' },
       },
       {
         id: 'measurement',
-        label: 'Wykonaj pomiar',
-        description: 'Wykonaj pierwszy pomiar masy ciała',
+        label: t('setup.step3'),
+        description: t('setup.step3Desc'),
         status: getMeasurementStatus(),
         navigateTo: { tab: 'measure' },
       },
     ];
-  }, [profileConfigured, deviceConfigured, hasMeasurements]);
+  }, [t, profileConfigured, deviceConfigured, hasMeasurements]);
 
   // Compute completion progress
   const completionProgress = useMemo(() => {

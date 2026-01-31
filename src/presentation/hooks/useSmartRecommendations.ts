@@ -8,6 +8,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useProfileStore, useCurrentProfile } from '../stores/profileStore';
 import { useIsDeviceConfigured } from '../stores/bleStore';
 import { useMeasurementStore, useLatestMeasurement } from '../stores/measurementStore';
@@ -53,6 +54,7 @@ const daysSince = (date: Date): number => {
  * Hook for generating smart recommendations
  */
 export function useSmartRecommendations(): SmartRecommendation[] {
+  const { t } = useTranslation('recommendations');
   const { profiles } = useProfileStore();
   const currentProfile = useCurrentProfile();
   const isDeviceConfigured = useIsDeviceConfigured();
@@ -68,10 +70,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
         id: 'no-profile',
         type: 'action',
         priority: 1,
-        title: 'Utworz profil',
-        description: 'Profil jest wymagany do zapisywania i analizowania pomiarow',
+        title: t('smart.createProfile.title'),
+        description: t('smart.createProfile.description'),
         action: {
-          label: 'Utworz profil',
+          label: t('smart.createProfile.title'),
           tab: 'settings',
           subTab: 'profiles',
         },
@@ -85,10 +87,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
         id: 'no-device',
         type: 'action',
         priority: 1,
-        title: 'Połącz wagę',
-        description: 'Skonfiguruj połączenie z wagą Xiaomi aby automatyzować pomiary',
+        title: t('smart.connectScale.title'),
+        description: t('smart.connectScale.description'),
         action: {
-          label: 'Konfiguruj urządzenie',
+          label: t('smart.connectScale.title'),
           tab: 'settings',
           subTab: 'device',
         },
@@ -102,10 +104,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
         id: 'first-measurement',
         type: 'action',
         priority: 2,
-        title: 'Wykonaj pierwszy pomiar',
-        description: 'Rozpocznij śledzenie parametrów ciała wykonując pierwszy pomiar',
+        title: t('smart.firstMeasurement.title'),
+        description: t('smart.firstMeasurement.description'),
         action: {
-          label: 'Wykonaj pomiar',
+          label: t('smart.firstMeasurement.action'),
           tab: 'measure',
         },
         icon: 'scale',
@@ -121,10 +123,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'measurement-reminder',
           type: 'warning',
           priority: 3,
-          title: 'Czas na pomiar',
-          description: `Ostatni pomiar byl ${days} dni temu. Regularne pomiary pomagaja sledzic postepy`,
+          title: t('smart.timeForMeasurement.title'),
+          description: t('smart.timeForMeasurement.description', { days }),
           action: {
-            label: 'Wykonaj pomiar',
+            label: t('smart.timeForMeasurement.action'),
             tab: 'measure',
           },
           icon: 'calendar',
@@ -134,10 +136,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'measurement-suggestion',
           type: 'insight',
           priority: 4,
-          title: 'Rozważ pomiar',
-          description: `Minęły ${days} dni od ostatniego pomiaru`,
+          title: t('smart.considerMeasurement.title'),
+          description: t('smart.considerMeasurement.description', { days }),
           action: {
-            label: 'Wykonaj pomiar',
+            label: t('smart.considerMeasurement.action'),
             tab: 'measure',
           },
           icon: 'scale',
@@ -154,8 +156,8 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'bmi-underweight',
           type: 'warning',
           priority: 3,
-          title: 'BMI ponizej normy',
-          description: 'Twoje BMI wskazuje na niedowage. Rozważ konsultacje ze specjalista',
+          title: t('smart.bmiUnderweight.title'),
+          description: t('smart.bmiUnderweight.description'),
           icon: 'alert',
         });
       } else if (bmi >= 30) {
@@ -163,8 +165,8 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'bmi-obese',
           type: 'warning',
           priority: 3,
-          title: 'BMI znacznie podwyzszone',
-          description: 'Twoje BMI wskazuje na otylosc. Zalecana jest konsultacja lekarska',
+          title: t('smart.bmiHighlyElevated.title'),
+          description: t('smart.bmiHighlyElevated.description'),
           icon: 'alert',
         });
       } else if (bmi >= 25) {
@@ -172,10 +174,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'bmi-overweight',
           type: 'insight',
           priority: 4,
-          title: 'BMI lekko podwyzszone',
-          description: 'Twoje BMI wskazuje na nadwage. Sledz trendy aby monitorowac zmiany',
+          title: t('smart.bmiSlightlyElevated.title'),
+          description: t('smart.bmiSlightlyElevated.description'),
           action: {
-            label: 'Zobacz trendy',
+            label: t('smart.checkTrends.action'),
             tab: 'trends',
           },
           icon: 'trend',
@@ -189,8 +191,8 @@ export function useSmartRecommendations(): SmartRecommendation[] {
         id: 'visceral-fat',
         type: latestMeasurement.calculated.visceralFatLevel >= 15 ? 'warning' : 'insight',
         priority: latestMeasurement.calculated.visceralFatLevel >= 15 ? 3 : 4,
-        title: 'Podwyzszony tluszcz trzewny',
-        description: 'Wysoki poziom tluszczu trzewnego moze zwiekszyc ryzyko chorob metabolicznych',
+        title: t('smart.visceralFatElevated.title'),
+        description: t('smart.visceralFatElevated.description'),
         icon: 'alert',
       });
     }
@@ -209,8 +211,8 @@ export function useSmartRecommendations(): SmartRecommendation[] {
           id: 'regular-measurements',
           type: 'success',
           priority: 5,
-          title: 'Swietna regularnosc!',
-          description: 'Utrzymujesz regularne pomiary. To klucz do sledzenia postepow',
+          title: t('smart.greatRegularity.title'),
+          description: t('smart.greatRegularity.description'),
           icon: 'check',
         });
       }
@@ -222,10 +224,10 @@ export function useSmartRecommendations(): SmartRecommendation[] {
         id: 'check-trends',
         type: 'insight',
         priority: 5,
-        title: 'Sprawdz swoje trendy',
-        description: `Masz ${measurements.length} pomiarow. Zobacz jak zmieniaja sie Twoje parametry`,
+        title: t('smart.checkTrends.title'),
+        description: t('smart.checkTrends.description', { count: measurements.length }),
         action: {
-          label: 'Zobacz trendy',
+          label: t('smart.checkTrends.action'),
           tab: 'trends',
         },
         icon: 'trend',
@@ -234,7 +236,7 @@ export function useSmartRecommendations(): SmartRecommendation[] {
 
     // Sort by priority
     return recommendations.sort((a, b) => a.priority - b.priority).slice(0, 4);
-  }, [profiles, currentProfile, isDeviceConfigured, latestMeasurement, measurements]);
+  }, [t, profiles, currentProfile, isDeviceConfigured, latestMeasurement, measurements]);
 }
 
 export default useSmartRecommendations;

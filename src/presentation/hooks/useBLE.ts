@@ -11,6 +11,7 @@
  */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBLEContext } from '../contexts/BLEContext';
 import { useBLEStore } from '../stores/bleStore';
 import type { BLEConnectionState, BLEError, BLEDeviceInfo } from '../../application/ports/BLEPort';
@@ -55,15 +56,15 @@ export interface UseBLEReturn {
 }
 
 /**
- * Polish status messages
+ * Status message translation keys
  */
-const statusMessages: Record<BLEConnectionState, string> = {
-  disconnected: 'Rozlaczono',
-  scanning: 'Szukam wagi...',
-  connecting: 'Laczenie...',
-  connected: 'Polaczono',
-  reading: 'Odczyt pomiaru...',
-  error: 'Blad polaczenia',
+const statusMessageKeys: Record<BLEConnectionState, string> = {
+  disconnected: 'status.disconnected',
+  scanning: 'status.scanning',
+  connecting: 'status.connecting',
+  connected: 'status.connected',
+  reading: 'status.reading',
+  error: 'status.error',
 };
 
 /**
@@ -98,6 +99,7 @@ const statusColors: Record<BLEConnectionState, string> = {
  * ```
  */
 export function useBLE(): UseBLEReturn {
+  const { t } = useTranslation('ble');
   // Get context (provides service actions)
   const context = useBLEContext();
 
@@ -173,8 +175,9 @@ export function useBLE(): UseBLEReturn {
 
   // Get status message
   const getStatusMessage = useCallback((): string => {
-    return statusMessages[connectionState] || 'Nieznany';
-  }, [connectionState]);
+    const key = statusMessageKeys[connectionState];
+    return key ? t(key) : t('status.disconnected');
+  }, [connectionState, t]);
 
   // Get status color
   const getStatusColor = useCallback((): string => {

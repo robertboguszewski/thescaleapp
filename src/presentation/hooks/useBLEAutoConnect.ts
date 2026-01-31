@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBLEStore } from '../stores/bleStore';
 import { useMeasurementStore } from '../stores/measurementStore';
 import { useProfileStore, useCurrentProfile } from '../stores/profileStore';
@@ -169,6 +170,7 @@ interface UseBLEAutoConnectReturn {
  * Hook for automatic BLE connection and background measurement listening
  */
 export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseBLEAutoConnectReturn {
+  const { t } = useTranslation('ble');
   const fullConfig = { ...DEFAULT_CONFIG, ...config };
 
   // State
@@ -265,15 +267,15 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
 
       addNotification({
         type: 'success',
-        title: 'Pomiar zapisany',
-        message: `${raw.weightKg.toFixed(1)} kg - ${currentProfile.name}`,
+        title: t('notifications.measurementSaved.title'),
+        message: t('notifications.measurementSaved.message', { weight: raw.weightKg.toFixed(1), profileName: currentProfile.name }),
         duration: 5000,
       });
     } else {
       addNotification({
         type: 'info',
-        title: 'Nowy pomiar',
-        message: `${raw.weightKg.toFixed(1)} kg - Wybierz profil aby zapisać`,
+        title: t('notifications.newMeasurement.title'),
+        message: t('notifications.newMeasurement.message', { weight: raw.weightKg.toFixed(1) }),
         duration: 8000,
       });
     }
@@ -520,11 +522,11 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
       maxAttemptsCallbackCalledRef.current = true;
       addNotification({
         type: 'warning',
-        title: 'Utracono połączenie',
-        message: 'Nie udało się połączyć. Wstań na wagę i kliknij "Spróbuj ponownie".',
+        title: t('notifications.connectionLost.title'),
+        message: t('notifications.connectionLost.message'),
         duration: 15000,
         action: {
-          label: 'Spróbuj ponownie',
+          label: t('notifications.connectionLost.retryButton'),
           onClick: () => {
             // Reset and retry
             reconnectAttemptsRef.current = 0;
@@ -636,14 +638,14 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
       } else if (errorMessage.includes('Bluetooth') || errorMessage.includes('bluetooth')) {
         addNotification({
           type: 'error',
-          title: 'Błąd Bluetooth',
-          message: 'Sprawdź czy Bluetooth jest włączony w Ustawieniach systemu.',
+          title: t('notifications.bluetoothError.title'),
+          message: t('notifications.bluetoothError.message'),
           duration: 8000,
         });
       } else {
         addNotification({
           type: 'error',
-          title: 'Błąd połączenia',
+          title: t('notifications.connectionError.title'),
           message: errorMessage,
           duration: 5000,
         });
@@ -689,8 +691,8 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
       console.log('[AutoBLE] getDevices() not supported, falling back to manual connect');
       addNotification({
         type: 'info',
-        title: 'Waga skonfigurowana',
-        message: 'Kliknij "Aktywuj nasłuchiwanie" aby połączyć',
+        title: t('notifications.scaleConfigured.title'),
+        message: t('notifications.scaleConfigured.message'),
         duration: 10000,
       });
       return;
@@ -798,8 +800,8 @@ export function useBLEAutoConnect(config: Partial<AutoConnectConfig> = {}): UseB
       // Fallback to manual connect prompt
       addNotification({
         type: 'info',
-        title: 'Waga skonfigurowana',
-        message: 'Kliknij "Aktywuj nasłuchiwanie" aby połączyć',
+        title: t('notifications.scaleConfigured.title'),
+        message: t('notifications.scaleConfigured.message'),
         duration: 10000,
       });
     }
