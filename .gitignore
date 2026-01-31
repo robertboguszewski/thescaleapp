@@ -67,3 +67,6 @@ test-*.cjs
 *.key
 secrets.json
 credentials.json
+
+# User data (measurements, profiles)
+data/

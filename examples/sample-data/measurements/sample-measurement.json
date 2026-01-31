@@ -1,0 +1,18 @@
+{
+  "id": "measurement-001",
+  "profileId": "test-user-001",
+  "timestamp": "2025-01-15T08:30:00.000Z",
+  "weight": 75.5,
+  "impedance": 500,
+  "bodyComposition": {
+    "bmi": 24.7,
+    "bodyFatPercentage": 18.5,
+    "muscleMass": 55.2,
+    "boneMass": 3.2,
+    "bodyWater": 55.0,
+    "visceralFat": 8,
+    "bmr": 1720,
+    "leanBodyMass": 61.5,
+    "proteinPercentage": 18.2
+  }
+}

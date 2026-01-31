@@ -1,0 +1,10 @@
+{
+  "id": "test-user-001",
+  "name": "Test User",
+  "gender": "male",
+  "birthYear": 1990,
+  "heightCm": 175,
+  "isDefault": true,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-01T00:00:00.000Z"
+}
